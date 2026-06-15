@@ -62,7 +62,9 @@ def humanize(data: TextInput, x_api_key: str = Header(None)):
     stage1 = pass_1_restructure(data.text)
     stage2 = pass_2_human_voice(stage1)
     stage3 = pass_3_imperfections(stage2)
-    return {
-        "original": data.text,
-        "humanized": stage3
-    }
+ return {
+    "content": stage3,
+    "text": stage3,
+    "original": data.text,
+    "humanized": stage3
+}
