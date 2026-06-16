@@ -1,0 +1,107 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AI Humanizer - Make AI Text Sound Human</title>
+    <link rel="stylesheet" href="/static/style.css">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+</head>
+<body>
+    <div class="bg-animation">
+        <div class="blob blob-1"></div>
+        <div class="blob blob-2"></div>
+        <div class="blob blob-3"></div>
+    </div>
+
+    <header>
+        <div class="logo">
+            <span class="logo-icon">✨</span>
+            <span class="logo-text">Humanizer<span class="logo-accent">AI</span></span>
+        </div>
+        <div class="header-badge">
+            <span class="pulse-dot"></span>
+            Live & Free
+        </div>
+    </header>
+
+    <main>
+        <div class="hero">
+            <h1>Transform AI Text to <span class="gradient-text">Human Writing</span></h1>
+            <p class="subtitle">Powerful multi-stage humanizer. Bypass AI detection. 100% Free.</p>
+        </div>
+
+        <div class="container">
+            <div class="card input-card">
+                <div class="card-header">
+                    <h3>📝 AI Text Input</h3>
+                    <span class="word-count" id="inputCount">0 words</span>
+                </div>
+                <textarea 
+                    id="inputText" 
+                    placeholder="Paste your AI-generated text here..."
+                ></textarea>
+                <div class="card-footer">
+                    <button class="btn-secondary" id="clearBtn">Clear</button>
+                    <button class="btn-primary" id="humanizeBtn">
+                        <span class="btn-text">✨ Humanize Text</span>
+                        <span class="btn-loader" style="display:none;">
+                            <span class="spinner"></span>
+                            Processing...
+                        </span>
+                    </button>
+                </div>
+            </div>
+
+            <div class="card output-card">
+                <div class="card-header">
+                    <h3>🎯 Humanized Output</h3>
+                    <span class="word-count" id="outputCount">0 words</span>
+                </div>
+                <div class="output-area" id="outputText">
+                    <div class="placeholder">
+                        <div class="placeholder-icon">🚀</div>
+                        <p>Your humanized text will appear here</p>
+                        <small>Click "Humanize Text" to start</small>
+                    </div>
+                </div>
+                <div class="card-footer">
+                    <button class="btn-secondary" id="copyBtn" disabled>📋 Copy</button>
+                    <button class="btn-secondary" id="downloadBtn" disabled>💾 Download</button>
+                </div>
+            </div>
+        </div>
+
+        <div class="features">
+            <div class="feature">
+                <div class="feature-icon">⚡</div>
+                <h4>Lightning Fast</h4>
+                <p>Multi-stage processing in under 60 seconds</p>
+            </div>
+            <div class="feature">
+                <div class="feature-icon">🛡️</div>
+                <h4>Bypass Detection</h4>
+                <p>Beat ZeroGPT, GPTZero & QuillBot</p>
+            </div>
+            <div class="feature">
+                <div class="feature-icon">🆓</div>
+                <h4>100% Free</h4>
+                <p>No signup, no limits, no payment</p>
+            </div>
+            <div class="feature">
+                <div class="feature-icon">🔒</div>
+                <h4>Secure</h4>
+                <p>Your text is never stored</p>
+            </div>
+        </div>
+    </main>
+
+    <div class="toast" id="toast"></div>
+
+    <footer>
+        <p>Built with ❤️ by Sarath Kumar | Powered by Groq AI</p>
+    </footer>
+
+    <script src="/static/script.js"></script>
+</body>
+</html>
