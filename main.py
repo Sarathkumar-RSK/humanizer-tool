@@ -4,6 +4,7 @@ from pydantic import BaseModel
 from groq import Groq
 from dotenv import load_dotenv
 import os
+import re
 
 load_dotenv()
 app = FastAPI()
@@ -15,7 +16,15 @@ class TextInput(BaseModel):
     text: str
 
 
-# Serve the website
+class SmartInput(BaseModel):
+    text: str
+    target_ai: int = 20
+    max_loops: int = 5
+
+
+# ==========================================
+# WEBSITE PAGES
+# ==========================================
 @app.get("/")
 def home():
     return FileResponse("index.html")
@@ -33,9 +42,12 @@ def get_js():
 
 @app.get("/status")
 def status():
-    return {"message": "Humanizer API v4.0 is running", "status": "online"}
+    return {"message": "Smart Humanizer v5.0 is running", "status": "online"}
 
 
+# ==========================================
+# SECURITY
+# ==========================================
 def verify_api_key(x_api_key: str = Header(None)):
     if x_api_key is None:
         raise HTTPException(status_code=401, detail="Missing API key")
@@ -44,6 +56,82 @@ def verify_api_key(x_api_key: str = Header(None)):
     return True
 
 
+# ==========================================
+# AI DETECTOR (Pattern-Based - Fast & Free)
+# ==========================================
+def detect_ai_score(text):
+    """
+    Pattern-based AI detection.
+    Returns a score 0-100 (higher = more AI-like)
+    """
+    score = 0
+    text_lower = text.lower()
+    word_count = len(text.split())
+    
+    if word_count < 20:
+        return 50
+    
+    # AI buzzwords (common in ChatGPT output)
+    ai_words = [
+        'moreover', 'furthermore', 'additionally', 'consequently',
+        'utilize', 'facilitate', 'leverage', 'implement',
+        'robust', 'seamless', 'comprehensive', 'innovative',
+        'revolutionize', 'enhance', 'optimize', 'streamline',
+        'delve', 'navigate', 'embark', 'tapestry', 'realm',
+        'landscape', 'journey', 'paradigm', 'cutting-edge',
+        'in conclusion', 'in summary', 'it is important to note',
+        'it is worth noting', 'plays a crucial role', 'plays a vital role',
+        'multifaceted', 'underscore', 'pivotal', 'profound'
+    ]
+    
+    ai_word_count = sum(1 for word in ai_words if word in text_lower)
+    score += min(ai_word_count * 8, 40)
+    
+    # Check sentence length variation (humans vary more)
+    sentences = re.split(r'[.!?]+', text)
+    sentences = [s.strip() for s in sentences if s.strip()]
+    
+    if len(sentences) > 3:
+        lengths = [len(s.split()) for s in sentences]
+        avg_length = sum(lengths) / len(lengths)
+        variance = sum((l - avg_length) ** 2 for l in lengths) / len(lengths)
+        
+        # AI tends to have uniform sentence length (low variance)
+        if variance < 20:
+            score += 15
+        elif variance < 40:
+            score += 8
+    
+    # Check for contractions (humans use them more)
+    contractions = ["don't", "can't", "won't", "it's", "i'm", "you're", 
+                    "we're", "they're", "i've", "you've", "that's", "what's"]
+    contraction_count = sum(1 for c in contractions if c in text_lower)
+    
+    if contraction_count == 0 and word_count > 50:
+        score += 15
+    elif contraction_count < 2 and word_count > 100:
+        score += 8
+    
+    # Perfect grammar/structure indicator
+    if text.count(',') / max(word_count, 1) > 0.08:
+        score += 10
+    
+    # Check for personal touches
+    personal_words = ['i think', 'i believe', 'in my experience', 
+                      'personally', 'honestly', 'frankly', 'look,',
+                      'so,', 'well,', 'you know']
+    personal_count = sum(1 for p in personal_words if p in text_lower)
+    
+    if personal_count == 0 and word_count > 100:
+        score += 10
+    
+    # Cap at 100
+    return min(score, 100)
+
+
+# ==========================================
+# HUMANIZER ENGINE
+# ==========================================
 def call_groq(system_msg, user_msg, temp=1.0):
     response = client.chat.completions.create(
         model="llama-3.3-70b-versatile",
@@ -88,6 +176,26 @@ def humanize_text(text):
     return stage3
 
 
+# ==========================================
+# DETECTION ENDPOINT
+# ==========================================
+@app.post("/detect")
+def detect(data: TextInput):
+    if len(data.text) < 20:
+        raise HTTPException(status_code=400, detail="Text too short. Need at least 20 characters.")
+    
+    ai_score = detect_ai_score(data.text)
+    
+    return {
+        "ai_score": ai_score,
+        "human_score": 100 - ai_score,
+        "verdict": "AI Generated" if ai_score > 60 else "Likely Human" if ai_score > 30 else "Human Written"
+    }
+
+
+# ==========================================
+# REGULAR HUMANIZE (for n8n - needs API key)
+# ==========================================
 @app.post("/humanize")
 def humanize(data: TextInput, x_api_key: str = Header(None)):
     verify_api_key(x_api_key)
@@ -100,16 +208,59 @@ def humanize(data: TextInput, x_api_key: str = Header(None)):
     }
 
 
+# ==========================================
+# PUBLIC HUMANIZE (for website)
+# ==========================================
 @app.post("/humanize-public")
 def humanize_public(data: TextInput):
     if len(data.text) > 5000:
-        raise HTTPException(
-            status_code=400, 
-            detail="Text too long. Maximum 5000 characters for public use."
-        )
+        raise HTTPException(status_code=400, detail="Text too long. Max 5000 chars.")
     
     result = humanize_text(data.text)
+    ai_score = detect_ai_score(result)
+    
     return {
-        "content": result,
-        "humanized": result
+        "humanized": result,
+        "ai_score": ai_score,
+        "human_score": 100 - ai_score
+    }
+
+
+# ==========================================
+# SMART HUMANIZE (Auto-loop until target)
+# ==========================================
+@app.post("/smart-humanize")
+def smart_humanize(data: SmartInput):
+    if len(data.text) > 5000:
+        raise HTTPException(status_code=400, detail="Text too long. Max 5000 chars.")
+    
+    original_score = detect_ai_score(data.text)
+    current_text = data.text
+    attempts = []
+    
+    for attempt_num in range(1, data.max_loops + 1):
+        # Humanize
+        current_text = humanize_text(current_text)
+        
+        # Check score
+        current_score = detect_ai_score(current_text)
+        
+        attempts.append({
+            "attempt": attempt_num,
+            "ai_score": current_score
+        })
+        
+        # If target reached, stop
+        if current_score <= data.target_ai:
+            break
+    
+    return {
+        "original_text": data.text,
+        "humanized": current_text,
+        "original_ai_score": original_score,
+        "final_ai_score": current_score,
+        "human_score": 100 - current_score,
+        "attempts": attempts,
+        "total_attempts": len(attempts),
+        "target_reached": current_score <= data.target_ai
     }
