@@ -1,4 +1,6 @@
 from fastapi import FastAPI, Header, HTTPException
+from fastapi.staticfiles import StaticFiles
+from fastapi.responses import FileResponse
 from pydantic import BaseModel
 from groq import Groq
 from dotenv import load_dotenv
@@ -9,16 +11,33 @@ app = FastAPI()
 client = Groq(api_key=os.getenv("GROQ_API_KEY"))
 MY_SECRET_KEY = os.getenv("MY_API_KEY")
 
+# Mount static files (CSS, JS)
+app.mount("/static", StaticFiles(directory="static"), name="static")
+
 
 class TextInput(BaseModel):
     text: str
 
 
+# ========================================
+# WEBSITE - Show HTML page at root
+# ========================================
 @app.get("/")
 def home():
-    return {"message": "Humanizer API v3.0 is running 🚀"}
+    return FileResponse("static/index.html")
 
 
+# ========================================
+# API Status check
+# ========================================
+@app.get("/status")
+def status():
+    return {"message": "Humanizer API v4.0 is running", "status": "online"}
+
+
+# ========================================
+# SECURITY CHECK (for n8n)
+# ========================================
 def verify_api_key(x_api_key: str = Header(None)):
     if x_api_key is None:
         raise HTTPException(status_code=401, detail="Missing API key")
@@ -27,6 +46,9 @@ def verify_api_key(x_api_key: str = Header(None)):
     return True
 
 
+# ========================================
+# CALL GROQ AI
+# ========================================
 def call_groq(system_msg, user_msg, temp=1.0):
     response = client.chat.completions.create(
         model="llama-3.3-70b-versatile",
@@ -40,6 +62,9 @@ def call_groq(system_msg, user_msg, temp=1.0):
     return response.choices[0].message.content
 
 
+# ========================================
+# HUMANIZER STAGES
+# ========================================
 def pass_1_restructure(text):
     system = "You are an expert editor who breaks robotic AI writing patterns."
     prompt = f"""Restructure this text to break AI patterns. Mix sentence lengths drastically. Replace AI words: utilize to use, facilitate to help, leverage to use, moreover/furthermore to and, however to but. Delete "in conclusion" and "it is important to note". Keep all facts. Return ONLY the rewritten text.
@@ -64,15 +89,42 @@ TEXT: {text}"""
     return call_groq(system, prompt, temp=1.1)
 
 
+def humanize_text(text):
+    stage1 = pass_1_restructure(text)
+    stage2 = pass_2_human_voice(stage1)
+    stage3 = pass_3_imperfections(stage2)
+    return stage3
+
+
+# ========================================
+# SECURE ENDPOINT (for n8n - requires API key)
+# ========================================
 @app.post("/humanize")
 def humanize(data: TextInput, x_api_key: str = Header(None)):
     verify_api_key(x_api_key)
-    stage1 = pass_1_restructure(data.text)
-    stage2 = pass_2_human_voice(stage1)
-    stage3 = pass_3_imperfections(stage2)
+    result = humanize_text(data.text)
     return {
-        "content": stage3,
-        "text": stage3,
+        "content": result,
+        "text": result,
         "original": data.text,
-        "humanized": stage3
+        "humanized": result
+    }
+
+
+# ========================================
+# PUBLIC ENDPOINT (for website - no key needed)
+# ========================================
+@app.post("/humanize-public")
+def humanize_public(data: TextInput):
+    # Rate limit: only short texts allowed for public use
+    if len(data.text) > 5000:
+        raise HTTPException(
+            status_code=400, 
+            detail="Text too long. Maximum 5000 characters for public use."
+        )
+    
+    result = humanize_text(data.text)
+    return {
+        "content": result,
+        "humanized": result
     }
