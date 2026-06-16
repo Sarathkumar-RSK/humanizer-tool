@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>AI Humanizer - Make AI Text Sound Human</title>
+    <title>Smart AI Humanizer - Detect & Bypass AI</title>
     <link rel="stylesheet" href="/style.css">
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
 </head>
@@ -17,52 +17,78 @@
     <header>
         <div class="logo">
             <span class="logo-icon">✨</span>
-            <span class="logo-text">Humanizer<span class="logo-accent">AI</span></span>
+            <span class="logo-text">Smart<span class="logo-accent">Humanizer</span></span>
         </div>
         <div class="header-badge">
             <span class="pulse-dot"></span>
-            Live & Free
+            AI Detection + Auto-Humanize
         </div>
     </header>
 
     <main>
         <div class="hero">
-            <h1>Transform AI Text to <span class="gradient-text">Human Writing</span></h1>
-            <p class="subtitle">Powerful multi-stage humanizer. Bypass AI detection. 100% Free.</p>
+            <h1>Detect & Beat <span class="gradient-text">AI Detection</span></h1>
+            <p class="subtitle">Built-in AI detector + Smart auto-loop humanizer</p>
+        </div>
+
+        <!-- Mode Selector -->
+        <div class="mode-selector">
+            <button class="mode-btn active" data-mode="smart">🚀 Smart Mode (Auto-Loop)</button>
+            <button class="mode-btn" data-mode="humanize">✨ Humanize Only</button>
+            <button class="mode-btn" data-mode="detect">🔍 Detect Only</button>
         </div>
 
         <div class="container">
+            <!-- Input -->
             <div class="card input-card">
                 <div class="card-header">
-                    <h3>📝 AI Text Input</h3>
+                    <h3>📝 Input Text</h3>
                     <span class="word-count" id="inputCount">0 words</span>
                 </div>
                 <textarea 
                     id="inputText" 
-                    placeholder="Paste your AI-generated text here..."
+                    placeholder="Paste your text here..."
                 ></textarea>
                 <div class="card-footer">
                     <button class="btn-secondary" id="clearBtn">Clear</button>
-                    <button class="btn-primary" id="humanizeBtn">
-                        <span class="btn-text">✨ Humanize Text</span>
+                    <button class="btn-primary" id="actionBtn">
+                        <span class="btn-text">🚀 Smart Humanize</span>
                         <span class="btn-loader" style="display:none;">
                             <span class="spinner"></span>
-                            Processing...
+                            <span id="loaderText">Processing...</span>
                         </span>
                     </button>
                 </div>
             </div>
 
+            <!-- Output -->
             <div class="card output-card">
                 <div class="card-header">
-                    <h3>🎯 Humanized Output</h3>
+                    <h3>🎯 Result</h3>
                     <span class="word-count" id="outputCount">0 words</span>
                 </div>
+                
+                <!-- Score Display -->
+                <div class="score-display" id="scoreDisplay" style="display:none;">
+                    <div class="score-row">
+                        <div class="score-item">
+                            <span class="score-label">Original AI</span>
+                            <span class="score-value ai" id="originalScore">--%</span>
+                        </div>
+                        <div class="score-arrow">→</div>
+                        <div class="score-item">
+                            <span class="score-label">Final AI</span>
+                            <span class="score-value" id="finalScore">--%</span>
+                        </div>
+                    </div>
+                    <div class="attempts-display" id="attemptsDisplay"></div>
+                </div>
+
                 <div class="output-area" id="outputText">
                     <div class="placeholder">
                         <div class="placeholder-icon">🚀</div>
-                        <p>Your humanized text will appear here</p>
-                        <small>Click "Humanize Text" to start</small>
+                        <p>Result will appear here</p>
+                        <small>Click button to start</small>
                     </div>
                 </div>
                 <div class="card-footer">
@@ -74,24 +100,24 @@
 
         <div class="features">
             <div class="feature">
-                <div class="feature-icon">⚡</div>
-                <h4>Lightning Fast</h4>
-                <p>Multi-stage processing in under 60 seconds</p>
+                <div class="feature-icon">🔍</div>
+                <h4>AI Detection</h4>
+                <p>Built-in detector checks AI score</p>
             </div>
             <div class="feature">
-                <div class="feature-icon">🛡️</div>
-                <h4>Bypass Detection</h4>
-                <p>Beat ZeroGPT, GPTZero & QuillBot</p>
+                <div class="feature-icon">🔄</div>
+                <h4>Auto-Loop</h4>
+                <p>Keeps humanizing until target met</p>
             </div>
             <div class="feature">
                 <div class="feature-icon">🆓</div>
                 <h4>100% Free</h4>
-                <p>No signup, no limits, no payment</p>
+                <p>No limits, no signup</p>
             </div>
             <div class="feature">
-                <div class="feature-icon">🔒</div>
-                <h4>Secure</h4>
-                <p>Your text is never stored</p>
+                <div class="feature-icon">⚡</div>
+                <h4>Smart Engine</h4>
+                <p>Multi-stage humanization</p>
             </div>
         </div>
     </main>
@@ -102,6 +128,6 @@
         <p>Built with ❤️ by Sarath Kumar | Powered by Groq AI</p>
     </footer>
 
-<script src="/script.js"></script>
+    <script src="/script.js"></script>
 </body>
 </html>
