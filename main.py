@@ -1,5 +1,4 @@
 from fastapi import FastAPI, Header, HTTPException
-from fastapi.staticfiles import StaticFiles
 from fastapi.responses import FileResponse
 from pydantic import BaseModel
 from groq import Groq
@@ -11,33 +10,32 @@ app = FastAPI()
 client = Groq(api_key=os.getenv("GROQ_API_KEY"))
 MY_SECRET_KEY = os.getenv("MY_API_KEY")
 
-# Mount static files (CSS, JS)
-app.mount("/static", StaticFiles(directory="static"), name="static")
-
 
 class TextInput(BaseModel):
     text: str
 
 
-# ========================================
-# WEBSITE - Show HTML page at root
-# ========================================
+# Serve the website
 @app.get("/")
 def home():
-    return FileResponse("static/index.html")
+    return FileResponse("index.html")
 
 
-# ========================================
-# API Status check
-# ========================================
+@app.get("/style.css")
+def get_css():
+    return FileResponse("style.css", media_type="text/css")
+
+
+@app.get("/script.js")
+def get_js():
+    return FileResponse("script.js", media_type="application/javascript")
+
+
 @app.get("/status")
 def status():
     return {"message": "Humanizer API v4.0 is running", "status": "online"}
 
 
-# ========================================
-# SECURITY CHECK (for n8n)
-# ========================================
 def verify_api_key(x_api_key: str = Header(None)):
     if x_api_key is None:
         raise HTTPException(status_code=401, detail="Missing API key")
@@ -46,9 +44,6 @@ def verify_api_key(x_api_key: str = Header(None)):
     return True
 
 
-# ========================================
-# CALL GROQ AI
-# ========================================
 def call_groq(system_msg, user_msg, temp=1.0):
     response = client.chat.completions.create(
         model="llama-3.3-70b-versatile",
@@ -62,9 +57,6 @@ def call_groq(system_msg, user_msg, temp=1.0):
     return response.choices[0].message.content
 
 
-# ========================================
-# HUMANIZER STAGES
-# ========================================
 def pass_1_restructure(text):
     system = "You are an expert editor who breaks robotic AI writing patterns."
     prompt = f"""Restructure this text to break AI patterns. Mix sentence lengths drastically. Replace AI words: utilize to use, facilitate to help, leverage to use, moreover/furthermore to and, however to but. Delete "in conclusion" and "it is important to note". Keep all facts. Return ONLY the rewritten text.
@@ -96,9 +88,6 @@ def humanize_text(text):
     return stage3
 
 
-# ========================================
-# SECURE ENDPOINT (for n8n - requires API key)
-# ========================================
 @app.post("/humanize")
 def humanize(data: TextInput, x_api_key: str = Header(None)):
     verify_api_key(x_api_key)
@@ -111,12 +100,8 @@ def humanize(data: TextInput, x_api_key: str = Header(None)):
     }
 
 
-# ========================================
-# PUBLIC ENDPOINT (for website - no key needed)
-# ========================================
 @app.post("/humanize-public")
 def humanize_public(data: TextInput):
-    # Rate limit: only short texts allowed for public use
     if len(data.text) > 5000:
         raise HTTPException(
             status_code=400, 
