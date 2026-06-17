@@ -19,7 +19,7 @@ class TextInput(BaseModel):
 class SmartInput(BaseModel):
     text: str
     target_ai: int = 20
-    max_loops: int = 5
+    max_loops: int = 8
 
 
 # ==========================================
@@ -57,13 +57,9 @@ def verify_api_key(x_api_key: str = Header(None)):
 
 
 # ==========================================
-# AI DETECTOR (Pattern-Based - Fast & Free)
+# AI DETECTOR
 # ==========================================
 def detect_ai_score(text):
-    """
-    Pattern-based AI detection.
-    Returns a score 0-100 (higher = more AI-like)
-    """
     score = 0
     text_lower = text.lower()
     word_count = len(text.split())
@@ -71,7 +67,6 @@ def detect_ai_score(text):
     if word_count < 20:
         return 50
     
-    # AI buzzwords (common in ChatGPT output)
     ai_words = [
         'moreover', 'furthermore', 'additionally', 'consequently',
         'utilize', 'facilitate', 'leverage', 'implement',
@@ -87,7 +82,6 @@ def detect_ai_score(text):
     ai_word_count = sum(1 for word in ai_words if word in text_lower)
     score += min(ai_word_count * 8, 40)
     
-    # Check sentence length variation (humans vary more)
     sentences = re.split(r'[.!?]+', text)
     sentences = [s.strip() for s in sentences if s.strip()]
     
@@ -96,13 +90,11 @@ def detect_ai_score(text):
         avg_length = sum(lengths) / len(lengths)
         variance = sum((l - avg_length) ** 2 for l in lengths) / len(lengths)
         
-        # AI tends to have uniform sentence length (low variance)
         if variance < 20:
             score += 15
         elif variance < 40:
             score += 8
     
-    # Check for contractions (humans use them more)
     contractions = ["don't", "can't", "won't", "it's", "i'm", "you're", 
                     "we're", "they're", "i've", "you've", "that's", "what's"]
     contraction_count = sum(1 for c in contractions if c in text_lower)
@@ -112,11 +104,9 @@ def detect_ai_score(text):
     elif contraction_count < 2 and word_count > 100:
         score += 8
     
-    # Perfect grammar/structure indicator
     if text.count(',') / max(word_count, 1) > 0.08:
         score += 10
     
-    # Check for personal touches
     personal_words = ['i think', 'i believe', 'in my experience', 
                       'personally', 'honestly', 'frankly', 'look,',
                       'so,', 'well,', 'you know']
@@ -125,7 +115,6 @@ def detect_ai_score(text):
     if personal_count == 0 and word_count > 100:
         score += 10
     
-    # Cap at 100
     return min(score, 100)
 
 
@@ -209,7 +198,7 @@ def humanize(data: TextInput, x_api_key: str = Header(None)):
 
 
 # ==========================================
-# PUBLIC HUMANIZE (for website)
+# PUBLIC HUMANIZE
 # ==========================================
 @app.post("/humanize-public")
 def humanize_public(data: TextInput):
@@ -227,12 +216,8 @@ def humanize_public(data: TextInput):
 
 
 # ==========================================
-# SMART HUMANIZE (Auto-loop until target)
+# SMART HUMANIZE (Auto-loop with BEST tracking)
 # ==========================================
-class SmartInput(BaseModel):
-    text: str
-    target_ai: int = 20
-    max_loops: int = 10   # ← changed from 5 to 10
 @app.post("/smart-humanize")
 def smart_humanize(data: SmartInput):
     if len(data.text) > 5000:
@@ -254,21 +239,19 @@ def smart_humanize(data: SmartInput):
             "ai_score": current_score
         })
         
-        # Track BEST attempt
         if current_score < best_score:
             best_score = current_score
             best_text = current_text
             best_attempt_num = attempt_num
         
-        # Stop if target reached
         if current_score <= data.target_ai:
             break
     
     return {
         "original_text": data.text,
-        "humanized": best_text,                    # ← Returns BEST
+        "humanized": best_text,
         "original_ai_score": original_score,
-        "final_ai_score": best_score,              # ← Best score
+        "final_ai_score": best_score,
         "human_score": 100 - best_score,
         "attempts": attempts,
         "total_attempts": len(attempts),
