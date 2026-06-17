@@ -237,12 +237,12 @@ def smart_humanize(data: SmartInput):
     original_score = detect_ai_score(data.text)
     current_text = data.text
     attempts = []
+    best_text = data.text
+    best_score = original_score
+    best_attempt_num = 0
     
     for attempt_num in range(1, data.max_loops + 1):
-        # Humanize
         current_text = humanize_text(current_text)
-        
-        # Check score
         current_score = detect_ai_score(current_text)
         
         attempts.append({
@@ -250,17 +250,24 @@ def smart_humanize(data: SmartInput):
             "ai_score": current_score
         })
         
-        # If target reached, stop
+        # Track BEST attempt
+        if current_score < best_score:
+            best_score = current_score
+            best_text = current_text
+            best_attempt_num = attempt_num
+        
+        # Stop if target reached
         if current_score <= data.target_ai:
             break
     
     return {
         "original_text": data.text,
-        "humanized": current_text,
+        "humanized": best_text,                    # ← Returns BEST
         "original_ai_score": original_score,
-        "final_ai_score": current_score,
-        "human_score": 100 - current_score,
+        "final_ai_score": best_score,              # ← Best score
+        "human_score": 100 - best_score,
         "attempts": attempts,
         "total_attempts": len(attempts),
-        "target_reached": current_score <= data.target_ai
+        "best_attempt": best_attempt_num,
+        "target_reached": best_score <= data.target_ai
     }
