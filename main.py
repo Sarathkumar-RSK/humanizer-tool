@@ -159,10 +159,22 @@ TEXT: {text}"""
 
 
 def humanize_text(text):
-    stage1 = pass_1_restructure(text)
-    stage2 = pass_2_human_voice(stage1)
-    stage3 = pass_3_imperfections(stage2)
-    return stage3
+    system = "You are an expert at making AI text sound 100% human."
+    prompt = f"""Rewrite this text to bypass AI detection. Do ALL these at once:
+- Mix sentence lengths (short, long, fragments)
+- Use contractions (don't, can't, it's, I'm)
+- Add casual fillers (honestly, look, basically, you know)
+- Replace AI words: utilize→use, facilitate→help, leverage→use, moreover→and, however→but
+- Delete "in conclusion", "it is important to note", "delve", "tapestry", "realm"
+- Start some sentences with And, But, So
+- Add rhetorical questions
+- Use em-dashes naturally
+- Keep ALL facts intact
+
+Return ONLY the rewritten text, nothing else.
+
+TEXT: {text}"""
+    return call_groq(system, prompt, temp=1.0)
 
 
 # ==========================================
