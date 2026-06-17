@@ -229,6 +229,10 @@ def humanize_public(data: TextInput):
 # ==========================================
 # SMART HUMANIZE (Auto-loop until target)
 # ==========================================
+class SmartInput(BaseModel):
+    text: str
+    target_ai: int = 20
+    max_loops: int = 10   # ← changed from 5 to 10
 @app.post("/smart-humanize")
 def smart_humanize(data: SmartInput):
     if len(data.text) > 5000:
