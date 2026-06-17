@@ -254,7 +254,7 @@ async function startHumanize() {
   }, 800);
 
   try {
-    const response = await fetch('/api/humanize', {
+    const response = await fetch('/smart-humanize', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ text })
