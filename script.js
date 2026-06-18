@@ -1,14 +1,11 @@
 // ==========================================
-// HUMANIZER PRO - FRONTEND SCRIPT
+// HUMANIZER PRO - WATERFALL EDITION
 // ==========================================
 
 const inputText = document.getElementById('inputText');
 const outputText = document.getElementById('outputText');
 const humanizeBtn = document.getElementById('humanizeBtn');
 
-// ==========================================
-// MAIN HUMANIZE FUNCTION
-// ==========================================
 async function startHumanize() {
   const text = inputText.value.trim();
   
@@ -17,10 +14,9 @@ async function startHumanize() {
     return;
   }
 
-  // Disable button
   humanizeBtn.disabled = true;
-  humanizeBtn.textContent = '⏳ Processing... (10 loops)';
-  outputText.value = 'Humanizing your text... Please wait 30-60 seconds...';
+  humanizeBtn.textContent = '⏳ Processing...';
+  outputText.value = '🌊 Running waterfall: Light → Medium → Heavy...\nStopping as soon as AI score drops below 15%';
 
   try {
     const response = await fetch('/smart-humanize', {
@@ -28,8 +24,8 @@ async function startHumanize() {
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ 
         text: text,
-        target_ai: 20,
-        max_loops: 10
+        target_ai: 15,
+        max_loops: 3
       })
     });
 
@@ -39,17 +35,25 @@ async function startHumanize() {
       throw new Error(data.detail || 'Failed to humanize');
     }
 
-    // Show result
     outputText.value = data.humanized;
     
-    // Show stats
-    const stats = `
-✅ DONE!
-📊 AI Score: ${data.final_ai_score}%
-👤 Human Score: ${data.human_score}%
-🔄 Attempts: ${data.total_attempts}/10
-🎯 Target Reached: ${data.target_reached ? 'YES' : 'NO (best attempt returned)'}
-    `;
+    let attemptsLog = data.attempts.map(a => 
+      `  Level ${a.level} (${a.method}): ${a.ai_score}% AI`
+    ).join('\n');
+    
+    const stats = `✅ DONE!
+
+📊 RESULTS:
+   Original AI Score: ${data.original_ai_score}%
+   Final AI Score:    ${data.final_ai_score}%
+   Human Score:       ${data.human_score}%
+   
+🌊 WATERFALL ATTEMPTS:
+${attemptsLog}
+
+🏆 Best Method: ${data.best_method}
+🎯 Target Reached: ${data.target_reached ? 'YES ✅' : 'NO (best returned)'}
+💰 Tokens Used: ${data.tokens_used}`;
     
     console.log(stats);
     alert(stats);
@@ -64,9 +68,6 @@ async function startHumanize() {
   }
 }
 
-// ==========================================
-// COPY OUTPUT
-// ==========================================
 function copyOutput() {
   if (!outputText.value) {
     alert('Nothing to copy!');
@@ -76,17 +77,11 @@ function copyOutput() {
   alert('✅ Copied!');
 }
 
-// ==========================================
-// CLEAR INPUT
-// ==========================================
 function clearInput() {
   inputText.value = '';
   outputText.value = '';
 }
 
-// ==========================================
-// ATTACH EVENT LISTENERS
-// ==========================================
 if (humanizeBtn) {
   humanizeBtn.addEventListener('click', startHumanize);
 }
