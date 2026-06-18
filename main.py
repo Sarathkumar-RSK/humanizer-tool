@@ -42,7 +42,7 @@ def status():
 
 
 # ==========================================
-# PATTERN-BASED DETECTOR (Backup/Fallback)
+# PATTERN-BASED DETECTOR (Fallback)
 # ==========================================
 def detect_ai_pattern(text):
     score = 0
@@ -57,9 +57,10 @@ def detect_ai_pattern(text):
         'leverage', 'robust', 'seamless', 'comprehensive', 'innovative',
         'delve', 'navigate', 'tapestry', 'realm', 'landscape', 'paradigm',
         'in conclusion', 'in summary', 'it is important to note',
-        'multifaceted', 'pivotal', 'profound', 'cutting-edge', 'it is worth noting',
-        'notably', 'undoubtedly', 'certainly', 'as previously mentioned',
-        'this ensures', 'this allows', 'this enables', 'plays a crucial role'
+        'multifaceted', 'pivotal', 'profound', 'cutting-edge',
+        'it is worth noting', 'notably', 'undoubtedly', 'certainly',
+        'as previously mentioned', 'this ensures', 'this allows',
+        'this enables', 'plays a crucial role'
     ]
 
     ai_count = sum(1 for w in ai_words if w in text_lower)
@@ -75,11 +76,13 @@ def detect_ai_pattern(text):
         elif var < 40:
             score += 8
 
-    contractions = ["don't", "can't", "won't", "it's", "i'm", "you're", "that's", "isn't", "aren't", "we're"]
+    contractions = [
+        "don't", "can't", "won't", "it's", "i'm",
+        "you're", "that's", "isn't", "aren't", "we're"
+    ]
     if not any(c in text_lower for c in contractions) and word_count > 50:
         score += 15
 
-    # Check for no paragraph breaks (AI tends to write in single blocks)
     if '\n' not in text and word_count > 100:
         score += 10
 
@@ -87,11 +90,9 @@ def detect_ai_pattern(text):
 
 
 # ==========================================
-# REAL AI DETECTOR (ZeroGPT API + Pattern Hybrid)
+# REAL AI DETECTOR (ZeroGPT + Pattern Hybrid)
 # ==========================================
 def detect_ai_real(text):
-    """Uses ZeroGPT (real ML detector) + pattern-based for accuracy"""
-
     pattern_score = detect_ai_pattern(text)
 
     try:
@@ -100,7 +101,7 @@ def detect_ai_real(text):
             json={'input_text': text},
             headers={
                 'Content-Type': 'application/json',
-                'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36'
+                'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64)'
             },
             timeout=15
         )
@@ -108,19 +109,20 @@ def detect_ai_real(text):
         if response.status_code == 200:
             data = response.json()
             zerogpt_score = round(data.get('data', {}).get('fakePercentage', 0))
-            # Weighted average: 70% real detector + 30% pattern
             final_score = round((zerogpt_score * 0.7) + (pattern_score * 0.3))
+            print(f"  ZeroGPT: {zerogpt_score}% | Pattern: {pattern_score}% | Final: {final_score}%")
             return final_score
         else:
+            print(f"  ZeroGPT failed ({response.status_code}), using pattern score: {pattern_score}%")
             return pattern_score
 
     except Exception as e:
-        print(f"ZeroGPT API failed: {e}")
+        print(f"  ZeroGPT error: {e}, using pattern score: {pattern_score}%")
         return pattern_score
 
 
 # ==========================================
-# GEMINI HUMANIZER - LEVEL 1 (Standard Pass)
+# HUMANIZER LEVEL 1 - Standard
 # ==========================================
 def humanize_text_standard(text):
     prompt = f"""You are a master at making AI text completely undetectable by AI detectors like ZeroGPT, GPTZero, Turnitin, and QuillBot.
@@ -130,8 +132,8 @@ REWRITE the text below so it sounds 100% like a real human wrote it.
 CRITICAL RULES - APPLY EVERY SINGLE ONE:
 
 1. CONTRACTIONS EVERYWHERE: use don't, won't, can't, it's, that's, I'm, you're, we're, they're, isn't, aren't constantly
-2. WILD sentence length variation: Mix 3-word fragments with 25+ word sentences randomly. Like this. Short. Then a really long one that goes on and on.
-3. Personal fillers: use "honestly", "look", "I mean", "you know", "basically", "frankly", "actually", "tbh"
+2. WILD sentence length variation: Mix 3-word fragments with 25+ word sentences randomly. Like this. Short. Then a really long one.
+3. Personal fillers: use "honestly", "look", "I mean", "you know", "basically", "frankly", "actually"
 4. Start some sentences with: And, But, So, Now, Look, Well, Honestly
 5. Use Em-dashes — like this — for natural asides
 6. Add 1-2 rhetorical questions somewhere natural
@@ -142,28 +144,26 @@ CRITICAL RULES - APPLY EVERY SINGLE ONE:
    - moreover/furthermore → and/also
    - however → but
    - therefore/consequently → so
-   - in conclusion → (just end naturally)
-   - it is important to note → (delete entirely)
-   - delve into → look at / dig into
-   - navigate → handle / deal with
-   - tapestry, realm, landscape, paradigm → replace with simple word
-   - robust → strong / solid
+   - in conclusion → just end naturally
+   - it is important to note → delete entirely
+   - delve into → look at
+   - navigate → handle
+   - tapestry, realm, landscape, paradigm → simple word
+   - robust → strong
    - seamless → smooth
-   - comprehensive → full / complete
-   - innovative → new / fresh
-   - pivotal → key / important
+   - comprehensive → full
+   - innovative → new
+   - pivotal → key
    - multifaceted → complex
-   - it is worth noting → (delete)
+   - it is worth noting → delete
    - this ensures → this means
-   - plays a crucial role → matters a lot / is key
-8. Add sentence fragments randomly. Just like this. Works well.
+   - plays a crucial role → matters a lot
+8. Add sentence fragments randomly. Like this.
 9. Mix formal and casual tone naturally
-10. Vary paragraph lengths — some 1 sentence, some 4-5 sentences
-11. Add slight imperfections like "kinda", "gonna", "a lot" sparingly
-12. Use "and" to start sentences sometimes — it's more natural
+10. Vary paragraph lengths
+11. Use "and" to start sentences sometimes
 
 KEEP ALL FACTS AND MEANING INTACT. Only change HOW it's written.
-
 Return ONLY the rewritten text. No explanations. No quotes.
 
 TEXT TO REWRITE:
@@ -182,24 +182,24 @@ TEXT TO REWRITE:
 
 
 # ==========================================
-# GEMINI HUMANIZER - LEVEL 2 (Aggressive Pass)
+# HUMANIZER LEVEL 2 - Aggressive
 # ==========================================
 def humanize_text_aggressive(text):
-    prompt = f"""The text below still sounds like AI. You need to make it sound COMPLETELY human — like a real person typing casually.
+    prompt = f"""The text below still sounds like AI. Make it sound COMPLETELY human.
 
 This needs to FOOL ZeroGPT and GPTZero completely. Score must reach near 0% AI.
 
 DO THIS:
 - Restructure sentences completely — don't just swap words
-- Add personal opinions or tiny anecdotes ("I've seen this happen a lot", "from what I know")
+- Add personal opinions: "I've seen this happen a lot", "from what I know"
 - Use MORE contractions than feels necessary
-- Break grammar rules slightly — start with And, But, So
-- Add thinking words: "I mean", "honestly", "look", "basically"  
-- Make some sentences really short. Like one word short. Seriously.
-- Then write a long rambling sentence that feels like a real person just typing out their thoughts without stopping
+- Break grammar rules — start with And, But, So
+- Add thinking words: "I mean", "honestly", "look", "basically"
+- Make some sentences really short. Like one word. Seriously.
+- Then write a long rambling sentence that feels like someone typing their thoughts
 - Use dashes — like this — and (parentheses) for side thoughts
-- Remove any remaining formal/academic language
-- Add a rhetorical question if there isn't one already
+- Remove any remaining formal language
+- Add a rhetorical question if there isn't one
 - Use "a lot" instead of "many", "get" instead of "obtain", "show" instead of "demonstrate"
 - Occasionally repeat an idea in different words like a human would
 - Break into more paragraphs — shorter chunks feel more human
@@ -222,30 +222,30 @@ TEXT:
 
 
 # ==========================================
-# GEMINI HUMANIZER - LEVEL 3 (Nuclear Pass)
+# HUMANIZER LEVEL 3 - Nuclear
 # ==========================================
 def humanize_text_nuclear(text):
-    prompt = f"""This text is still being detected as AI-written. You must completely transform it.
+    prompt = f"""This text is still being detected as AI-written. COMPLETELY transform it.
 
 NUCLEAR HUMANIZATION — maximum effort:
 
-COMPLETELY rewrite from scratch using the same facts/information but:
-- Write like you're explaining to a friend in a message
+Rewrite from scratch using the same facts but:
+- Write like you're explaining to a friend in a casual message
 - Use very casual but intelligent tone
 - Add personal perspective: "honestly", "in my experience", "I've noticed"
-- Make it conversational — like the person is talking, not writing an essay
+- Make it conversational — like someone talking, not writing an essay
 - Short punchy sentences mixed with longer flowing ones
 - No academic structure — no "firstly, secondly, finally"
-- Use contractions for EVERY POSSIBLE WORD
-- Add filler phrases naturally: "you know what I mean", "that kind of thing", "stuff like that"
-- Break "rules" — start sentences with conjunctions, use fragments
+- Contractions for EVERY POSSIBLE WORD
+- Add filler phrases: "you know what I mean", "that kind of thing"
+- Break rules — fragments. Conjunctions at start. Run-ons that feel natural.
 - Use — dashes — and (parentheses) liberally
 - Add 2-3 rhetorical questions
-- Vary rhythm dramatically — fast then slow — punchy then flowing
-- Replace any remaining formal words with simple everyday words
-- Make it feel ALIVE and imperfect
+- Vary rhythm dramatically
+- Replace ALL formal words with simple everyday words
+- Make it feel ALIVE and slightly imperfect
 
-FACTS MUST STAY THE SAME. Return ONLY the rewritten text. No intro, no explanation.
+FACTS MUST STAY THE SAME. Return ONLY the rewritten text.
 
 TEXT:
 {text}"""
@@ -263,66 +263,66 @@ TEXT:
 
 
 # ==========================================
-# MASTER HUMANIZER - LOOPS UNTIL SCORE = 0-15%
+# MASTER LOOP - Humanize Until Zero
 # ==========================================
 def humanize_until_zero(text, target_score=15, max_attempts=6):
-    """
-    Keeps humanizing until AI score drops to target (default 15% or below)
-    Max 6 attempts to avoid infinite loop
-    Uses escalating aggression levels
-    """
+    # Step 1: Get original score
+    original_score = detect_ai_real(text)
+    print(f"📊 Original score: {original_score}%")
 
+    # Step 2: Already below target — no work needed
+    if original_score <= target_score:
+        print(f"✅ Already below target ({target_score}%). Returning original.")
+        return text, original_score, original_score, 0
+
+    # Step 3: Start humanizing loop
     best_text = text
-    best_score = detect_ai_real(text)
-    original_score = best_score
-
-    print(f"Starting score: {best_score}%")
-
-    # If already below target, return as-is
-    if best_score <= target_score:
-        return best_text, best_score, original_score, 0
-
+    best_score = original_score
     attempt = 0
 
     while best_score > target_score and attempt < max_attempts:
         attempt += 1
-        print(f"Attempt {attempt} — Current best score: {best_score}%")
+        print(f"🔄 Attempt {attempt}/{max_attempts} — Best so far: {best_score}%")
 
         try:
-            # Escalate aggression based on attempt number
+            # Pick level based on attempt number
             if attempt <= 2:
-                # Level 1: Standard humanization
+                print(f"  → Level 1: Standard")
                 candidate = humanize_text_standard(best_text)
             elif attempt <= 4:
-                # Level 2: Aggressive humanization
+                print(f"  → Level 2: Aggressive")
                 candidate = humanize_text_aggressive(best_text)
             else:
-                # Level 3: Nuclear humanization
+                print(f"  → Level 3: Nuclear")
                 candidate = humanize_text_nuclear(best_text)
 
+            # Score the new version
             candidate_score = detect_ai_real(candidate)
-            print(f"  → Candidate score: {candidate_score}%")
+            print(f"  → Result: {candidate_score}%")
 
-            # Always keep the best result
+            # Keep it only if it's better
             if candidate_score < best_score:
                 best_text = candidate
                 best_score = candidate_score
-                print(f"  ✓ New best: {best_score}%")
+                print(f"  ✓ Improved to {best_score}%")
+            else:
+                print(f"  ✗ No improvement, keeping best ({best_score}%)")
 
-            # Stop if we hit target
+            # Stop early if target reached
             if best_score <= target_score:
-                print(f"  🎯 Target reached: {best_score}%")
+                print(f"  🎯 Target reached at attempt {attempt}!")
                 break
 
         except Exception as e:
-            print(f"  ✗ Attempt {attempt} failed: {e}")
+            print(f"  ✗ Attempt {attempt} error: {e}")
             continue
 
+    print(f"🏁 Done — Final: {best_score}% | Attempts: {attempt}")
     return best_text, best_score, original_score, attempt
 
 
 # ==========================================
-# SECURITY (for n8n)
+# SECURITY
 # ==========================================
 def verify_api_key(x_api_key: str = Header(None)):
     if x_api_key is None:
@@ -336,14 +336,11 @@ def verify_api_key(x_api_key: str = Header(None)):
 # ENDPOINTS
 # ==========================================
 
-# Detect AI score only
 @app.post("/detect")
 def detect(data: TextInput):
     if len(data.text) < 20:
         raise HTTPException(status_code=400, detail="Text too short (min 20 chars)")
-
     score = detect_ai_real(data.text)
-
     return {
         "ai_score": score,
         "human_score": 100 - score,
@@ -351,7 +348,6 @@ def detect(data: TextInput):
     }
 
 
-# Website endpoint (public) - loops until score near zero
 @app.post("/humanize-public")
 def humanize_public(data: TextInput):
     if len(data.text) > 5000:
@@ -359,25 +355,27 @@ def humanize_public(data: TextInput):
     if len(data.text) < 20:
         raise HTTPException(status_code=400, detail="Text too short (min 20 chars)")
 
-    # Run the loop until score hits 0-15%
     humanized, final_score, original_score, attempts = humanize_until_zero(
         text=data.text,
-        target_score=15,   # Aim for 15% or below
-        max_attempts=6     # Max 6 tries
+        target_score=15,
+        max_attempts=6
     )
+
+    improvement = original_score - final_score
 
     return {
         "humanized": humanized,
         "original_ai_score": original_score,
         "final_ai_score": final_score,
         "human_score": 100 - final_score,
-        "improvement": original_score - final_score,
+        "improvement": improvement,
         "attempts_used": attempts,
-        "target_reached": final_score <= 15
+        "target_reached": final_score <= 15,
+        "already_human": attempts == 0,
+        "message": "Already human enough!" if attempts == 0 else f"Humanized in {attempts} passes"
     }
 
 
-# n8n endpoint (needs API key) - also loops until zero
 @app.post("/humanize")
 def humanize_for_n8n(data: TextInput, x_api_key: str = Header(None)):
     verify_api_key(x_api_key)
@@ -388,6 +386,8 @@ def humanize_for_n8n(data: TextInput, x_api_key: str = Header(None)):
         max_attempts=6
     )
 
+    improvement = original_score - final_score
+
     return {
         "content": humanized,
         "text": humanized,
@@ -395,37 +395,9 @@ def humanize_for_n8n(data: TextInput, x_api_key: str = Header(None)):
         "ai_score": final_score,
         "human_score": 100 - final_score,
         "original_ai_score": original_score,
-        "improvement": original_score - final_score,
+        "improvement": improvement,
         "attempts_used": attempts,
-        "target_reached": final_score <= 15
-    }
-
-
-# Optional: Custom target score endpoint
-@app.post("/humanize-custom/{target}")
-def humanize_custom_target(target: int, data: TextInput, x_api_key: str = Header(None)):
-    """Humanize with custom target score (0-50)"""
-    verify_api_key(x_api_key)
-
-    if target < 0 or target > 50:
-        raise HTTPException(status_code=400, detail="Target must be between 0 and 50")
-    if len(data.text) > 5000:
-        raise HTTPException(status_code=400, detail="Text too long (max 5000 chars)")
-
-    humanized, final_score, original_score, attempts = humanize_until_zero(
-        text=data.text,
-        target_score=target,
-        max_attempts=8  # More attempts for custom targets
-    )
-
-    return {
-        "content": humanized,
-        "humanized": humanized,
-        "ai_score": final_score,
-        "human_score": 100 - final_score,
-        "original_ai_score": original_score,
-        "improvement": original_score - final_score,
-        "attempts_used": attempts,
-        "target_score": target,
-        "target_reached": final_score <= target
+        "target_reached": final_score <= 15,
+        "already_human": attempts == 0,
+        "message": "Already human enough!" if attempts == 0 else f"Humanized in {attempts} passes"
     }
