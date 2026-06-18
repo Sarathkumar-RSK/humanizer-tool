@@ -2,7 +2,8 @@ from fastapi import FastAPI, Header, HTTPException
 from fastapi.responses import FileResponse
 from pydantic import BaseModel
 from dotenv import load_dotenv
-import google.generativeai as genai
+from google import genai
+from google.genai import types
 import os
 import re
 import requests
@@ -10,11 +11,19 @@ import requests
 load_dotenv()
 app = FastAPI()
 
-# Configure Gemini
-genai.configure(api_key=os.getenv("GEMINI_API_KEY"))
-model = genai.GenerativeModel("gemini-1.5-flash")
+# Configure new Gemini client
+client = genai.Client(api_key=os.getenv("GEMINI_API_KEY"))
 
 MY_SECRET_KEY = os.getenv("MY_API_KEY")
+
+# ==========================================
+# CHECK AVAILABLE MODELS (run once to debug)
+# ==========================================
+# Uncomment below to see all available models in your logs
+# for m in client.models.list():
+#     print(m.name)
+
+GEMINI_MODEL = "gemini-2.0-flash"
 
 
 class TextInput(BaseModel):
@@ -38,7 +47,20 @@ def get_js():
 
 @app.get("/status")
 def status():
-    return {"status": "online", "version": "Humanizer Pro v10.0 - Gemini Powered"}
+    return {
+        "status": "online",
+        "version": "Humanizer Pro v11.0 - Gemini 2.0 Flash",
+        "model": GEMINI_MODEL
+    }
+
+@app.get("/models")
+def list_models():
+    """Debug endpoint — see all available models"""
+    try:
+        models = [m.name for m in client.models.list()]
+        return {"models": models}
+    except Exception as e:
+        return {"error": str(e)}
 
 
 # ==========================================
@@ -113,12 +135,29 @@ def detect_ai_real(text):
             print(f"  ZeroGPT: {zerogpt_score}% | Pattern: {pattern_score}% | Final: {final_score}%")
             return final_score
         else:
-            print(f"  ZeroGPT failed ({response.status_code}), using pattern score: {pattern_score}%")
+            print(f"  ZeroGPT failed ({response.status_code}), using pattern: {pattern_score}%")
             return pattern_score
 
     except Exception as e:
-        print(f"  ZeroGPT error: {e}, using pattern score: {pattern_score}%")
+        print(f"  ZeroGPT error: {e}, using pattern: {pattern_score}%")
         return pattern_score
+
+
+# ==========================================
+# GEMINI CALL HELPER (new google-genai SDK)
+# ==========================================
+def call_gemini(prompt: str, temperature: float = 1.4) -> str:
+    response = client.models.generate_content(
+        model=GEMINI_MODEL,
+        contents=prompt,
+        config=types.GenerateContentConfig(
+            temperature=temperature,
+            top_p=0.95,
+            top_k=64,
+            max_output_tokens=8192,
+        )
+    )
+    return response.text.strip()
 
 
 # ==========================================
@@ -169,16 +208,7 @@ Return ONLY the rewritten text. No explanations. No quotes.
 TEXT TO REWRITE:
 {text}"""
 
-    response = model.generate_content(
-        prompt,
-        generation_config=genai.types.GenerationConfig(
-            temperature=1.4,
-            top_p=0.95,
-            top_k=64,
-            max_output_tokens=8192,
-        )
-    )
-    return response.text.strip()
+    return call_gemini(prompt, temperature=1.4)
 
 
 # ==========================================
@@ -196,12 +226,12 @@ DO THIS:
 - Break grammar rules — start with And, But, So
 - Add thinking words: "I mean", "honestly", "look", "basically"
 - Make some sentences really short. Like one word. Seriously.
-- Then write a long rambling sentence that feels like someone typing their thoughts
+- Then write a long rambling sentence that feels like someone typing their thoughts without stopping to edit
 - Use dashes — like this — and (parentheses) for side thoughts
-- Remove any remaining formal language
-- Add a rhetorical question if there isn't one
+- Remove any remaining formal language completely
+- Add a rhetorical question if there isn't one already
 - Use "a lot" instead of "many", "get" instead of "obtain", "show" instead of "demonstrate"
-- Occasionally repeat an idea in different words like a human would
+- Occasionally repeat an idea in different words like a real human would
 - Break into more paragraphs — shorter chunks feel more human
 
 KEEP ALL FACTS. Return ONLY the rewritten text.
@@ -209,57 +239,39 @@ KEEP ALL FACTS. Return ONLY the rewritten text.
 TEXT:
 {text}"""
 
-    response = model.generate_content(
-        prompt,
-        generation_config=genai.types.GenerationConfig(
-            temperature=1.6,
-            top_p=0.98,
-            top_k=64,
-            max_output_tokens=8192,
-        )
-    )
-    return response.text.strip()
+    return call_gemini(prompt, temperature=1.6)
 
 
 # ==========================================
 # HUMANIZER LEVEL 3 - Nuclear
 # ==========================================
 def humanize_text_nuclear(text):
-    prompt = f"""This text is still being detected as AI-written. COMPLETELY transform it.
+    prompt = f"""This text is STILL being detected as AI-written. COMPLETELY transform it right now.
 
-NUCLEAR HUMANIZATION — maximum effort:
+NUCLEAR HUMANIZATION — maximum effort required:
 
 Rewrite from scratch using the same facts but:
-- Write like you're explaining to a friend in a casual message
-- Use very casual but intelligent tone
-- Add personal perspective: "honestly", "in my experience", "I've noticed"
-- Make it conversational — like someone talking, not writing an essay
-- Short punchy sentences mixed with longer flowing ones
-- No academic structure — no "firstly, secondly, finally"
-- Contractions for EVERY POSSIBLE WORD
-- Add filler phrases: "you know what I mean", "that kind of thing"
-- Break rules — fragments. Conjunctions at start. Run-ons that feel natural.
-- Use — dashes — and (parentheses) liberally
-- Add 2-3 rhetorical questions
-- Vary rhythm dramatically
-- Replace ALL formal words with simple everyday words
-- Make it feel ALIVE and slightly imperfect
+- Write like you're explaining to a close friend in a casual message
+- Use very casual but intelligent tone throughout
+- Add personal perspective everywhere: "honestly", "in my experience", "I've noticed"
+- Make it fully conversational — like someone talking out loud, not writing an essay
+- Short punchy sentences mixed with longer flowing ones randomly
+- Zero academic structure — absolutely no "firstly, secondly, finally" patterns
+- Contractions for EVERY POSSIBLE WORD combination
+- Add natural filler phrases: "you know what I mean", "that kind of thing", "stuff like that"
+- Break ALL grammar rules naturally — fragments. Conjunctions at start. Run-ons that feel real.
+- Use — dashes — and (parentheses) very liberally throughout
+- Add 2-3 rhetorical questions naturally placed
+- Vary rhythm dramatically — fast punchy then slow flowing
+- Replace EVERY formal word with simple everyday words
+- Make it feel ALIVE, imperfect, and genuinely human
 
-FACTS MUST STAY THE SAME. Return ONLY the rewritten text.
+FACTS MUST STAY 100% THE SAME. Return ONLY the rewritten text. No intro, no explanation.
 
 TEXT:
 {text}"""
 
-    response = model.generate_content(
-        prompt,
-        generation_config=genai.types.GenerationConfig(
-            temperature=1.8,
-            top_p=0.99,
-            top_k=64,
-            max_output_tokens=8192,
-        )
-    )
-    return response.text.strip()
+    return call_gemini(prompt, temperature=1.8)
 
 
 # ==========================================
@@ -270,12 +282,12 @@ def humanize_until_zero(text, target_score=15, max_attempts=6):
     original_score = detect_ai_real(text)
     print(f"📊 Original score: {original_score}%")
 
-    # Step 2: Already below target — no work needed
+    # Step 2: Already below target — return immediately
     if original_score <= target_score:
-        print(f"✅ Already below target ({target_score}%). Returning original.")
+        print(f"✅ Already below target ({target_score}%). No passes needed.")
         return text, original_score, original_score, 0
 
-    # Step 3: Start humanizing loop
+    # Step 3: Humanize loop
     best_text = text
     best_score = original_score
     attempt = 0
@@ -285,30 +297,30 @@ def humanize_until_zero(text, target_score=15, max_attempts=6):
         print(f"🔄 Attempt {attempt}/{max_attempts} — Best so far: {best_score}%")
 
         try:
-            # Pick level based on attempt number
+            # Escalate level based on attempt
             if attempt <= 2:
-                print(f"  → Level 1: Standard")
+                print(f"  → Level 1: Standard (temp 1.4)")
                 candidate = humanize_text_standard(best_text)
             elif attempt <= 4:
-                print(f"  → Level 2: Aggressive")
+                print(f"  → Level 2: Aggressive (temp 1.6)")
                 candidate = humanize_text_aggressive(best_text)
             else:
-                print(f"  → Level 3: Nuclear")
+                print(f"  → Level 3: Nuclear (temp 1.8)")
                 candidate = humanize_text_nuclear(best_text)
 
-            # Score the new version
+            # Score the candidate
             candidate_score = detect_ai_real(candidate)
-            print(f"  → Result: {candidate_score}%")
+            print(f"  → Candidate score: {candidate_score}%")
 
-            # Keep it only if it's better
+            # Keep only if better
             if candidate_score < best_score:
                 best_text = candidate
                 best_score = candidate_score
-                print(f"  ✓ Improved to {best_score}%")
+                print(f"  ✓ Improved! New best: {best_score}%")
             else:
-                print(f"  ✗ No improvement, keeping best ({best_score}%)")
+                print(f"  ✗ No improvement (best stays: {best_score}%)")
 
-            # Stop early if target reached
+            # Early exit if target reached
             if best_score <= target_score:
                 print(f"  🎯 Target reached at attempt {attempt}!")
                 break
@@ -317,7 +329,7 @@ def humanize_until_zero(text, target_score=15, max_attempts=6):
             print(f"  ✗ Attempt {attempt} error: {e}")
             continue
 
-    print(f"🏁 Done — Final: {best_score}% | Attempts: {attempt}")
+    print(f"🏁 Final: {best_score}% after {attempt} attempts")
     return best_text, best_score, original_score, attempt
 
 
@@ -335,7 +347,6 @@ def verify_api_key(x_api_key: str = Header(None)):
 # ==========================================
 # ENDPOINTS
 # ==========================================
-
 @app.post("/detect")
 def detect(data: TextInput):
     if len(data.text) < 20:
