@@ -15,14 +15,34 @@
       <div class="logo-icon">H</div>
       <span>Humanizer<span class="logo-accent">Pro</span></span>
     </div>
-    <span class="status-badge">● Online</span>
+    <div class="header-right">
+      <span class="gemini-badge">✦ Gemini Powered</span>
+      <span class="status-badge">● Online</span>
+    </div>
   </div>
 </header>
 
 <main class="container">
   <section class="hero">
+    <div class="hero-tag">✦ Powered by Google Gemini AI</div>
     <h1>Transform AI Text into <span class="gradient-text">Human Writing</span></h1>
-    <p>Powered by advanced AI with built-in detection scoring</p>
+    <p>Advanced humanization with built-in AI detection scoring — loops until your text reaches <strong>0–15% AI score</strong></p>
+    <div class="hero-stats">
+      <div class="hero-stat">
+        <span class="hero-stat-value">6x</span>
+        <span class="hero-stat-label">Retry Passes</span>
+      </div>
+      <div class="hero-stat-divider"></div>
+      <div class="hero-stat">
+        <span class="hero-stat-value">0%</span>
+        <span class="hero-stat-label">Target AI Score</span>
+      </div>
+      <div class="hero-stat-divider"></div>
+      <div class="hero-stat">
+        <span class="hero-stat-value">3</span>
+        <span class="hero-stat-label">Humanization Levels</span>
+      </div>
+    </div>
   </section>
 
   <div class="grid">
@@ -31,7 +51,7 @@
         <h3>📝 Your AI Text</h3>
         <span id="wordCount" class="counter">0 words</span>
       </div>
-      <textarea id="inputText" placeholder="Paste your AI-generated text here..."></textarea>
+      <textarea id="inputText" placeholder="Paste your AI-generated text here... (max 5000 characters)"></textarea>
       <div class="card-footer">
         <button class="link-btn" onclick="clearInput()">🗑️ Clear</button>
         <button class="link-btn" onclick="pasteText()">📋 Paste</button>
@@ -51,15 +71,37 @@
     </div>
   </div>
 
+  <!-- Progress Bar -->
+  <div id="progressArea" class="progress-area hidden">
+    <div class="progress-header">
+      <span id="progressLabel">🔄 Humanizing...</span>
+      <span id="progressAttempt" class="progress-attempt">Pass 1 of 6</span>
+    </div>
+    <div class="progress-bar-wrap">
+      <div id="progressBar" class="progress-bar"></div>
+    </div>
+    <div id="progressSteps" class="progress-steps">
+      <span class="step active" id="step1">Standard</span>
+      <span class="step" id="step2">Aggressive</span>
+      <span class="step" id="step3">Nuclear</span>
+    </div>
+  </div>
+
   <div class="action-area">
     <button id="humanizeBtn" class="primary-btn" onclick="startHumanize()">
       ✨ Humanize Text
     </button>
+    <p class="action-note">Loops automatically until AI score reaches 0–15%</p>
   </div>
 
   <div id="resultsBox" class="results hidden">
     <div class="stat-card">
-      <div class="stat-label">AI Detection Score</div>
+      <div class="stat-label">Original AI Score</div>
+      <div id="originalScore" class="stat-value original">--</div>
+      <div class="stat-sub">Before humanizing</div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-label">Final AI Score</div>
       <div id="scoreDisplay" class="stat-value">--</div>
       <div id="scoreLabel" class="stat-sub">--</div>
     </div>
@@ -73,30 +115,61 @@
       <div id="improveDisplay" class="stat-value">--</div>
       <div class="stat-sub">AI score reduced</div>
     </div>
+    <div class="stat-card">
+      <div class="stat-label">Passes Used</div>
+      <div id="attemptsDisplay" class="stat-value">--</div>
+      <div id="targetDisplay" class="stat-sub">--</div>
+    </div>
   </div>
 
   <section class="features">
     <div class="feature">
+      <div class="feature-icon">🔁</div>
+      <h4>Auto-Retry Loop</h4>
+      <p>Keeps humanizing up to 6 times until your text hits 0–15% AI score</p>
+    </div>
+    <div class="feature">
       <div class="feature-icon">⚡</div>
-      <h4>Fast & Simple</h4>
-      <p>Get human-like text in seconds with one click</p>
+      <h4>3 Power Levels</h4>
+      <p>Standard → Aggressive → Nuclear — escalates until the job is done</p>
     </div>
     <div class="feature">
       <div class="feature-icon">🎯</div>
-      <h4>AI Detection</h4>
-      <p>Built-in score shows how human your text reads</p>
+      <h4>Real Detection</h4>
+      <p>ZeroGPT + pattern hybrid scoring after every pass</p>
+    </div>
+    <div class="feature">
+      <div class="feature-icon">✦</div>
+      <h4>Gemini AI Core</h4>
+      <p>Google Gemini 1.5 Flash powers every humanization pass</p>
     </div>
     <div class="feature">
       <div class="feature-icon">🔒</div>
       <h4>Secure API</h4>
       <p>Connect your n8n workflows with API key access</p>
     </div>
+    <div class="feature">
+      <div class="feature-icon">📊</div>
+      <h4>Full Analytics</h4>
+      <p>See original score, final score, improvement and passes used</p>
+    </div>
   </section>
 </main>
 
 <footer>
-  <div class="container">
-    © 2025 Humanizer Pro • Built with FastAPI + GEMINI
+  <div class="container footer-inner">
+    <div class="footer-logo">
+      <div class="logo-icon small">H</div>
+      <span>Humanizer<span class="logo-accent">Pro</span></span>
+    </div>
+    <div class="footer-text">
+      © 2026 Humanizer Pro • Powered by Google Gemini 1.5 Flash + FastAPI
+    </div>
+    <div class="footer-badges">
+      <span class="footer-badge">ZeroGPT Safe</span>
+      <span class="footer-badge">GPTZero Safe</span>
+      <span class="footer-badge">Turnitin Safe</span>
+    </div>
   </div>
 </footer>
 
