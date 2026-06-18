@@ -15,10 +15,9 @@ const progressAttempt = document.getElementById('progressAttempt');
 inputText.addEventListener('input', () => {
   const text = inputText.value.trim();
   const words = text.length === 0 ? 0 : text.split(/\s+/).filter(w => w.length > 0).length;
-  const chars = text.length;
+  const chars = inputText.value.length;
   wordCount.textContent = `${words} words · ${chars}/5000`;
 
-  // Warn if too long
   if (chars > 5000) {
     wordCount.style.color = '#dc2626';
   } else if (chars > 4000) {
@@ -41,16 +40,13 @@ function startProgressSimulation() {
   progressArea.classList.remove('hidden');
   progressBar.style.width = '0%';
   progressBar.style.background = 'linear-gradient(90deg, #6366f1, #8b5cf6)';
-
   updatePassDisplay(1);
 
   progressInterval = setInterval(() => {
-    // Slow down near milestones to feel realistic
     if (currentProgress < 15) {
       currentProgress += 2;
     } else if (currentProgress < 30) {
       currentProgress += 1;
-      if (currentProgress === 20) updatePassDisplay(1);
     } else if (currentProgress < 50) {
       currentProgress += 0.8;
       if (currentProgress >= 35 && currentPass < 2) updatePassDisplay(2);
@@ -70,14 +66,12 @@ function startProgressSimulation() {
 
     progressBar.style.width = currentProgress + '%';
 
-    // Change color as it progresses
     if (currentProgress > 60) {
       progressBar.style.background = 'linear-gradient(90deg, #8b5cf6, #06b6d4)';
     }
     if (currentProgress > 85) {
       progressBar.style.background = 'linear-gradient(90deg, #06b6d4, #10b981)';
     }
-
   }, 200);
 }
 
@@ -85,7 +79,6 @@ function updatePassDisplay(pass) {
   currentPass = pass;
   progressAttempt.textContent = `Pass ${pass} of 6`;
 
-  // Update step highlights
   const step1 = document.getElementById('step1');
   const step2 = document.getElementById('step2');
   const step3 = document.getElementById('step3');
@@ -114,18 +107,15 @@ function finishProgress(success) {
   if (success) {
     progressBar.style.width = '100%';
     progressBar.style.background = 'linear-gradient(90deg, #10b981, #06b6d4)';
-    progressLabel.textContent = '✅ Humanization Complete!';
-
-    // Update all steps to done
+    progressLabel.textContent = '✅ Complete!';
     document.getElementById('step1').className = 'step done';
     document.getElementById('step2').className = 'step done';
     document.getElementById('step3').className = 'step done';
   } else {
     progressBar.style.background = 'linear-gradient(90deg, #dc2626, #ef4444)';
-    progressLabel.textContent = '❌ Process Failed';
+    progressLabel.textContent = '❌ Failed';
   }
 
-  // Hide progress bar after 2.5 seconds
   setTimeout(() => {
     progressArea.classList.add('hidden');
   }, 2500);
@@ -141,7 +131,6 @@ async function startHumanize() {
     showAlert('⚠️ Please enter at least 20 characters', 'warning');
     return;
   }
-
   if (text.length > 5000) {
     showAlert('⚠️ Text too long. Maximum 5000 characters.', 'warning');
     return;
@@ -155,7 +144,6 @@ async function startHumanize() {
   outputBadge.style.color = '#6366f1';
   resultsBox.classList.add('hidden');
 
-  // Start progress animation
   startProgressSimulation();
 
   try {
@@ -171,16 +159,19 @@ async function startHumanize() {
       throw new Error(data.detail || 'Failed to humanize text');
     }
 
-    // Finish progress
     finishProgress(true);
 
-    // Show humanized text
     outputText.value = data.humanized;
     outputBadge.textContent = '✅ Done';
     outputBadge.style.color = '#16a34a';
 
-    // Show results
     showResults(data);
+
+    if (data.already_human) {
+      showAlert('✅ Text was already human-like! Score: ' + data.original_ai_score + '%', 'success');
+    } else {
+      showAlert('✅ Done! Reduced AI score by ' + data.improvement + '% in ' + data.attempts_used + ' passes', 'success');
+    }
 
   } catch (error) {
     console.error('Error:', error);
@@ -209,7 +200,7 @@ function showResults(data) {
   const attemptsDisplay = document.getElementById('attemptsDisplay');
   const targetDisplay = document.getElementById('targetDisplay');
 
-  // Original AI score
+  // Original score
   originalScore.textContent = data.original_ai_score + '%';
   setScoreColor(originalScore, data.original_ai_score);
 
@@ -249,21 +240,21 @@ function showResults(data) {
     improveDisplay.style.color = '#6b7280';
   }
 
-  // Attempts used
-  const attempts = data.attempts_used || 1;
-  attemptsDisplay.textContent = attempts + ' / 6';
-  attemptsDisplay.style.color = attempts <= 2 ? '#16a34a' : attempts <= 4 ? '#ca8a04' : '#dc2626';
-
-  // Target reached
-  if (data.target_reached) {
-    targetDisplay.textContent = '🎯 Target reached!';
+  // Passes used
+  if (data.already_human) {
+    attemptsDisplay.textContent = '0 / 6';
+    attemptsDisplay.style.color = '#16a34a';
+    targetDisplay.textContent = '✅ Already human!';
     targetDisplay.style.color = '#16a34a';
   } else {
-    targetDisplay.textContent = '⚠️ Best result achieved';
-    targetDisplay.style.color = '#ca8a04';
+    const attempts = data.attempts_used;
+    attemptsDisplay.textContent = attempts + ' / 6';
+    attemptsDisplay.style.color = attempts <= 2 ? '#16a34a' : attempts <= 4 ? '#ca8a04' : '#dc2626';
+    targetDisplay.textContent = data.target_reached ? '🎯 Target reached!' : '⚠️ Best result achieved';
+    targetDisplay.style.color = data.target_reached ? '#16a34a' : '#ca8a04';
   }
 
-  // Animate results in
+  // Animate in
   resultsBox.style.opacity = '0';
   resultsBox.style.transform = 'translateY(10px)';
   setTimeout(() => {
@@ -274,7 +265,7 @@ function showResults(data) {
 }
 
 // ==========================================
-// HELPER: Score Color
+// HELPERS
 // ==========================================
 function setScoreColor(element, score) {
   if (score <= 20) {
@@ -286,11 +277,7 @@ function setScoreColor(element, score) {
   }
 }
 
-// ==========================================
-// HELPER: Custom Alert
-// ==========================================
 function showAlert(message, type = 'info') {
-  // Remove existing alerts
   const existing = document.querySelector('.custom-alert');
   if (existing) existing.remove();
 
@@ -302,12 +289,9 @@ function showAlert(message, type = 'info') {
   setTimeout(() => {
     alert.style.opacity = '0';
     setTimeout(() => alert.remove(), 300);
-  }, 3000);
+  }, 3500);
 }
 
-// ==========================================
-// UTILITY FUNCTIONS
-// ==========================================
 function clearInput() {
   inputText.value = '';
   outputText.value = '';
@@ -330,7 +314,7 @@ async function pasteText() {
 }
 
 function copyOutput() {
-  if (!outputText.value || outputText.value.includes('Processing')) {
+  if (!outputText.value) {
     showAlert('⚠️ Nothing to copy yet!', 'warning');
     return;
   }
@@ -340,7 +324,7 @@ function copyOutput() {
 }
 
 function downloadOutput() {
-  if (!outputText.value || outputText.value.includes('Processing')) {
+  if (!outputText.value) {
     showAlert('⚠️ Nothing to download yet!', 'warning');
     return;
   }
@@ -351,12 +335,10 @@ function downloadOutput() {
   a.download = 'humanized-text.txt';
   a.click();
   URL.revokeObjectURL(url);
-  showAlert('✅ File downloaded!', 'success');
+  showAlert('✅ Downloaded!', 'success');
 }
 
-// ==========================================
-// KEYBOARD SHORTCUT (Ctrl+Enter)
-// ==========================================
+// Ctrl+Enter shortcut
 inputText.addEventListener('keydown', (e) => {
   if ((e.ctrlKey || e.metaKey) && e.key === 'Enter') {
     startHumanize();
