@@ -3,5 +3,3 @@ uvicorn
 groq
 python-dotenv
 pydantic
-transformers
-torch
