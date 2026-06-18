@@ -1,7 +1,3 @@
-// ==========================================
-// HUMANIZER PRO - WATERFALL EDITION
-// ==========================================
-
 const inputText = document.getElementById('inputText');
 const outputText = document.getElementById('outputText');
 const humanizeBtn = document.getElementById('humanizeBtn');
@@ -16,50 +12,38 @@ async function startHumanize() {
 
   humanizeBtn.disabled = true;
   humanizeBtn.textContent = '⏳ Processing...';
-  outputText.value = '🌊 Running waterfall: Light → Medium → Heavy...\nStopping as soon as AI score drops below 15%';
+  outputText.value = '🌊 Smart Waterfall: Light → Medium → Heavy\nStops when AI score < 15%';
 
   try {
     const response = await fetch('/smart-humanize', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ 
-        text: text,
-        target_ai: 15,
-        max_loops: 3
-      })
+      body: JSON.stringify({ text: text, target_ai: 15, max_loops: 3 })
     });
 
     const data = await response.json();
-
-    if (!response.ok) {
-      throw new Error(data.detail || 'Failed to humanize');
-    }
+    if (!response.ok) throw new Error(data.detail || 'Failed to humanize');
 
     outputText.value = data.humanized;
     
-    let attemptsLog = data.attempts.map(a => 
-      `  Level ${a.level} (${a.method}): ${a.ai_score}% AI`
+    const log = data.attempts.map(a => 
+      `   Attempt ${a.attempt} (${a.method}): ${a.ai_score}% AI`
     ).join('\n');
     
-    const stats = `✅ DONE!
+    alert(`✅ DONE!
 
 📊 RESULTS:
-   Original AI Score: ${data.original_ai_score}%
-   Final AI Score:    ${data.final_ai_score}%
-   Human Score:       ${data.human_score}%
-   
-🌊 WATERFALL ATTEMPTS:
-${attemptsLog}
+   Original: ${data.original_ai_score}% AI
+   Final:    ${data.final_ai_score}% AI
+   Human:    ${data.human_score}%
 
-🏆 Best Method: ${data.best_method}
-🎯 Target Reached: ${data.target_reached ? 'YES ✅' : 'NO (best returned)'}
-💰 Tokens Used: ${data.tokens_used}`;
-    
-    console.log(stats);
-    alert(stats);
+🌊 ATTEMPTS (${data.total_attempts}/3):
+${log}
+
+🏆 Winner: ${data.best_method}
+🎯 Target Reached: ${data.target_reached ? 'YES ✅' : 'NO (best returned)'}`);
 
   } catch (error) {
-    console.error('Error:', error);
     outputText.value = '';
     alert('❌ Error: ' + error.message);
   } finally {
@@ -69,10 +53,7 @@ ${attemptsLog}
 }
 
 function copyOutput() {
-  if (!outputText.value) {
-    alert('Nothing to copy!');
-    return;
-  }
+  if (!outputText.value) { alert('Nothing to copy!'); return; }
   navigator.clipboard.writeText(outputText.value);
   alert('✅ Copied!');
 }
@@ -82,6 +63,4 @@ function clearInput() {
   outputText.value = '';
 }
 
-if (humanizeBtn) {
-  humanizeBtn.addEventListener('click', startHumanize);
-}
+if (humanizeBtn) humanizeBtn.addEventListener('click', startHumanize);
