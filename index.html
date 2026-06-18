@@ -3,323 +3,103 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Humanizer Pro - AI Text Humanizer</title>
-<script src="https://cdn.tailwindcss.com"></script>
+<title>Humanizer Pro - AI to Human Text Converter</title>
+<link rel="stylesheet" href="style.css">
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
-<style>
-  * { font-family: 'Inter', sans-serif; }
-  .gradient-text {
-    background: linear-gradient(135deg, #2563eb 0%, #7c3aed 100%);
-    -webkit-background-clip: text;
-    -webkit-text-fill-color: transparent;
-  }
-  .pulse-ring {
-    animation: pulse-ring 1.5s ease-in-out infinite;
-  }
-  @keyframes pulse-ring {
-    0%, 100% { opacity: 1; }
-    50% { opacity: 0.5; }
-  }
-  .fade-in { animation: fadeIn 0.4s ease-out; }
-  @keyframes fadeIn {
-    from { opacity: 0; transform: translateY(10px); }
-    to { opacity: 1; transform: translateY(0); }
-  }
-  .scrollbar-thin::-webkit-scrollbar { width: 6px; }
-  .scrollbar-thin::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 3px; }
-</style>
 </head>
-<body class="bg-white min-h-screen">
+<body>
 
-<!-- Header -->
-<header class="border-b border-gray-100 bg-white sticky top-0 z-50">
-  <div class="max-w-6xl mx-auto px-6 py-4 flex items-center justify-between">
-    <div class="flex items-center gap-2">
-      <div class="w-9 h-9 bg-gradient-to-br from-blue-600 to-purple-600 rounded-lg flex items-center justify-center text-white font-bold">H</div>
-      <span class="font-bold text-gray-900 text-lg">Humanizer<span class="text-blue-600">Pro</span></span>
+<header>
+  <div class="container header-content">
+    <div class="logo">
+      <div class="logo-icon">H</div>
+      <span>Humanizer<span class="logo-accent">Pro</span></span>
     </div>
-    <div class="flex items-center gap-3">
-      <span class="text-xs bg-green-50 text-green-700 px-3 py-1 rounded-full font-medium">● Online</span>
-    </div>
+    <span class="status-badge">● Online</span>
   </div>
 </header>
 
-<!-- Hero -->
-<section class="max-w-6xl mx-auto px-6 pt-12 pb-8 text-center">
-  <h1 class="text-4xl md:text-5xl font-extrabold text-gray-900 mb-4">
-    Transform AI Text into <span class="gradient-text">Human Writing</span>
-  </h1>
-  <p class="text-gray-600 text-lg max-w-2xl mx-auto">
-    Advanced 10-loop technology with real-time AI detection. Bypass AI checkers effortlessly.
-  </p>
-</section>
+<main class="container">
+  <section class="hero">
+    <h1>Transform AI Text into <span class="gradient-text">Human Writing</span></h1>
+    <p>Powered by advanced AI with built-in detection scoring</p>
+  </section>
 
-<!-- Main App -->
-<main class="max-w-6xl mx-auto px-6 pb-16">
-  
-  <!-- Input/Output Grid -->
-  <div class="grid md:grid-cols-2 gap-5 mb-6">
-    
-    <!-- Input -->
-    <div class="bg-white border border-gray-200 rounded-2xl p-5 shadow-sm">
-      <div class="flex items-center justify-between mb-3">
-        <h3 class="font-semibold text-gray-900 flex items-center gap-2">
-          <span class="text-blue-600">📝</span> Your AI Text
-        </h3>
-        <span id="wordCount" class="text-xs text-gray-500">0 words</span>
+  <div class="grid">
+    <div class="card">
+      <div class="card-header">
+        <h3>📝 Your AI Text</h3>
+        <span id="wordCount" class="counter">0 words</span>
       </div>
-      <textarea 
-        id="inputText" 
-        placeholder="Paste your AI-generated text here..."
-        class="w-full h-72 p-4 border border-gray-200 rounded-xl resize-none focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent text-gray-800 scrollbar-thin"></textarea>
-      <div class="flex justify-between mt-3">
-        <button onclick="clearInput()" class="text-sm text-gray-500 hover:text-red-500 transition">🗑️ Clear</button>
-        <button onclick="pasteText()" class="text-sm text-gray-500 hover:text-blue-600 transition">📋 Paste</button>
+      <textarea id="inputText" placeholder="Paste your AI-generated text here..."></textarea>
+      <div class="card-footer">
+        <button class="link-btn" onclick="clearInput()">🗑️ Clear</button>
+        <button class="link-btn" onclick="pasteText()">📋 Paste</button>
       </div>
     </div>
 
-    <!-- Output -->
-    <div class="bg-white border border-gray-200 rounded-2xl p-5 shadow-sm">
-      <div class="flex items-center justify-between mb-3">
-        <h3 class="font-semibold text-gray-900 flex items-center gap-2">
-          <span class="text-purple-600">✨</span> Humanized Output
-        </h3>
-        <span id="outputBadge" class="text-xs text-gray-400">Waiting...</span>
+    <div class="card">
+      <div class="card-header">
+        <h3>✨ Humanized Output</h3>
+        <span id="outputBadge" class="counter">Waiting...</span>
       </div>
-      <textarea 
-        id="outputText" 
-        readonly
-        placeholder="Your humanized text will appear here..."
-        class="w-full h-72 p-4 border border-gray-200 rounded-xl resize-none bg-gray-50 text-gray-800 scrollbar-thin"></textarea>
-      <div class="flex justify-between mt-3">
-        <button onclick="copyOutput()" id="copyBtn" class="text-sm text-gray-500 hover:text-blue-600 transition disabled:opacity-30" disabled>📋 Copy</button>
-        <button onclick="downloadOutput()" id="downloadBtn" class="text-sm text-gray-500 hover:text-blue-600 transition disabled:opacity-30" disabled>💾 Download</button>
+      <textarea id="outputText" readonly placeholder="Your humanized text will appear here..."></textarea>
+      <div class="card-footer">
+        <button class="link-btn" onclick="copyOutput()">📋 Copy</button>
+        <button class="link-btn" onclick="downloadOutput()">💾 Download</button>
       </div>
     </div>
   </div>
 
-  <!-- Action Button -->
-  <div class="text-center mb-6">
-    <button 
-      id="humanizeBtn"
-      onclick="startHumanize()"
-      class="bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 text-white font-semibold px-12 py-4 rounded-xl shadow-lg shadow-blue-200 transition-all hover:scale-105 disabled:opacity-50 disabled:cursor-not-allowed">
+  <div class="action-area">
+    <button id="humanizeBtn" class="primary-btn" onclick="startHumanize()">
       ✨ Humanize Text
     </button>
   </div>
 
-  <!-- Progress Section (Hidden initially) -->
-  <div id="progressBox" class="hidden bg-gradient-to-br from-blue-50 to-purple-50 border border-blue-100 rounded-2xl p-6 fade-in">
-    <div class="flex items-center justify-between mb-3">
-      <h4 class="font-semibold text-gray-900 flex items-center gap-2">
-        <span class="pulse-ring">🔄</span> 
-        <span id="progressText">Processing...</span>
-      </h4>
-      <span id="progressCounter" class="text-sm font-medium text-blue-700">Attempt 0/10</span>
+  <div id="resultsBox" class="results hidden">
+    <div class="stat-card">
+      <div class="stat-label">AI Detection Score</div>
+      <div id="scoreDisplay" class="stat-value">--</div>
+      <div id="scoreLabel" class="stat-sub">--</div>
     </div>
-    <div class="w-full bg-white rounded-full h-3 overflow-hidden mb-3">
-      <div id="progressBar" class="h-full bg-gradient-to-r from-blue-500 to-purple-500 transition-all duration-500" style="width: 0%"></div>
+    <div class="stat-card">
+      <div class="stat-label">Human Score</div>
+      <div id="humanDisplay" class="stat-value">--</div>
+      <div class="stat-sub">Quality rating</div>
     </div>
-    <p id="progressDetail" class="text-sm text-gray-600">Initializing...</p>
-  </div>
-
-  <!-- Results Section (Hidden initially) -->
-  <div id="resultsBox" class="hidden mt-6 fade-in">
-    <div class="grid md:grid-cols-3 gap-4">
-      
-      <!-- AI Score Card -->
-      <div class="bg-white border border-gray-200 rounded-2xl p-5 shadow-sm">
-        <div class="text-xs text-gray-500 mb-1">AI Detection Score</div>
-        <div id="scoreDisplay" class="text-3xl font-bold">--</div>
-        <div id="scoreLabel" class="text-sm mt-1">Waiting...</div>
-      </div>
-
-      <!-- Attempts Card -->
-      <div class="bg-white border border-gray-200 rounded-2xl p-5 shadow-sm">
-        <div class="text-xs text-gray-500 mb-1">Total Attempts</div>
-        <div id="attemptsDisplay" class="text-3xl font-bold text-gray-900">--</div>
-        <div class="text-sm text-gray-600 mt-1">out of 10 loops</div>
-      </div>
-
-      <!-- Best Attempt Card -->
-      <div class="bg-white border border-gray-200 rounded-2xl p-5 shadow-sm">
-        <div class="text-xs text-gray-500 mb-1">Best Result</div>
-        <div id="bestDisplay" class="text-3xl font-bold text-purple-600">--</div>
-        <div id="bestLabel" class="text-sm text-gray-600 mt-1">--</div>
-      </div>
-
+    <div class="stat-card">
+      <div class="stat-label">Improvement</div>
+      <div id="improveDisplay" class="stat-value">--</div>
+      <div class="stat-sub">AI score reduced</div>
     </div>
   </div>
 
-  <!-- Features -->
-  <div class="grid md:grid-cols-3 gap-5 mt-12">
-    <div class="text-center p-5">
-      <div class="text-3xl mb-2">🔄</div>
-      <h4 class="font-semibold text-gray-900 mb-1">Smart 3-Step System</h4>
-      <p class="text-sm text-gray-600">Light → Medium → Heavy until AI score below 15%</p>
+  <section class="features">
+    <div class="feature">
+      <div class="feature-icon">⚡</div>
+      <h4>Fast & Simple</h4>
+      <p>Get human-like text in seconds with one click</p>
     </div>
-    <div class="text-center p-5">
-      <div class="text-3xl mb-2">🎯</div>
-      <h4 class="font-semibold text-gray-900 mb-1">Real Detection</h4>
-      <p class="text-sm text-gray-600">Powered by Sapling AI & ZeroGPT detectors</p>
+    <div class="feature">
+      <div class="feature-icon">🎯</div>
+      <h4>AI Detection</h4>
+      <p>Built-in score shows how human your text reads</p>
     </div>
-    <div class="text-center p-5">
-      <div class="text-3xl mb-2">⚡</div>
-      <h4 class="font-semibold text-gray-900 mb-1">Best Result</h4>
-      <p class="text-sm text-gray-600">Always returns the lowest AI score achieved</p>
+    <div class="feature">
+      <div class="feature-icon">🔒</div>
+      <h4>Secure API</h4>
+      <p>Connect your n8n workflows with API key access</p>
     </div>
-  </div>
-
+  </section>
 </main>
 
-<footer class="border-t border-gray-100 py-6 text-center text-sm text-gray-500">
-  © 2025 Humanizer Pro • Built with ❤️
+<footer>
+  <div class="container">
+    © 2025 Humanizer Pro • Built with FastAPI + Groq
+  </div>
 </footer>
 
-<script>
-const inputText = document.getElementById('inputText');
-const outputText = document.getElementById('outputText');
-const wordCount = document.getElementById('wordCount');
-
-// Word counter
-inputText.addEventListener('input', () => {
-  const words = inputText.value.trim().split(/\s+/).filter(w => w.length > 0).length;
-  wordCount.textContent = `${words} words`;
-});
-
-function clearInput() {
-  inputText.value = '';
-  wordCount.textContent = '0 words';
-}
-
-async function pasteText() {
-  try {
-    const text = await navigator.clipboard.readText();
-    inputText.value = text;
-    inputText.dispatchEvent(new Event('input'));
-  } catch (e) {
-    alert('Please paste manually (Ctrl+V)');
-  }
-}
-
-function copyOutput() {
-  navigator.clipboard.writeText(outputText.value);
-  const btn = document.getElementById('copyBtn');
-  btn.textContent = '✅ Copied!';
-  setTimeout(() => btn.textContent = '📋 Copy', 2000);
-}
-
-function downloadOutput() {
-  const blob = new Blob([outputText.value], { type: 'text/plain' });
-  const url = URL.createObjectURL(blob);
-  const a = document.createElement('a');
-  a.href = url;
-  a.download = 'humanized-text.txt';
-  a.click();
-}
-
-async function startHumanize() {
-  const text = inputText.value.trim();
-  
-  if (text.length < 20) {
-    alert('Please enter at least 20 characters');
-    return;
-  }
-
-  const btn = document.getElementById('humanizeBtn');
-  const progressBox = document.getElementById('progressBox');
-  const resultsBox = document.getElementById('resultsBox');
-  const progressBar = document.getElementById('progressBar');
-  const progressCounter = document.getElementById('progressCounter');
-  const progressDetail = document.getElementById('progressDetail');
-  const outputBadge = document.getElementById('outputBadge');
-
-  // Reset UI
-  btn.disabled = true;
-  btn.textContent = '⏳ Processing...';
-  progressBox.classList.remove('hidden');
-  resultsBox.classList.add('hidden');
-  outputText.value = '';
-  outputBadge.textContent = 'Processing...';
-  outputBadge.className = 'text-xs text-blue-600';
-
-  // Simulated progress (real loops happen on server)
-  let fakeProgress = 0;
-  const progressInterval = setInterval(() => {
-    fakeProgress = Math.min(fakeProgress + Math.random() * 10, 90);
-    progressBar.style.width = fakeProgress + '%';
-    const attempt = Math.min(Math.ceil(fakeProgress / 10), 10);
-    progressCounter.textContent = `Attempt ${attempt}/10`;
-    progressDetail.textContent = `Humanizing and analyzing... Loop ${attempt} in progress`;
-  }, 800);
-
-  try {
-    const response = await fetch('/smart-humanize', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ text })
-    });
-
-    const data = await response.json();
-    clearInterval(progressInterval);
-
-    if (!data.success) {
-      throw new Error(data.error || 'Failed to humanize');
-    }
-
-    // Complete progress
-    progressBar.style.width = '100%';
-    progressCounter.textContent = `Completed ${data.attempts}/${data.maxLoops}`;
-    progressDetail.textContent = data.targetReached 
-      ? `✅ Target reached on attempt ${data.bestAttempt}!`
-      : `🏆 Returning best attempt (#${data.bestAttempt})`;
-
-    // Display output
-    outputText.value = data.finalText;
-    outputBadge.textContent = '✅ Done';
-    outputBadge.className = 'text-xs text-green-600 font-medium';
-
-    // Enable buttons
-    document.getElementById('copyBtn').disabled = false;
-    document.getElementById('downloadBtn').disabled = false;
-
-    // Show results
-    resultsBox.classList.remove('hidden');
-    
-    // Score
-    const scoreDisplay = document.getElementById('scoreDisplay');
-    const scoreLabel = document.getElementById('scoreLabel');
-    scoreDisplay.textContent = data.aiScore + '%';
-    
-    if (data.aiScore <= 20) {
-      scoreDisplay.className = 'text-3xl font-bold text-green-600';
-      scoreLabel.textContent = '🟢 Human-like';
-      scoreLabel.className = 'text-sm text-green-600 mt-1';
-    } else if (data.aiScore <= 50) {
-      scoreDisplay.className = 'text-3xl font-bold text-yellow-600';
-      scoreLabel.textContent = '🟡 Mostly Human';
-      scoreLabel.className = 'text-sm text-yellow-600 mt-1';
-    } else {
-      scoreDisplay.className = 'text-3xl font-bold text-red-600';
-      scoreLabel.textContent = '🔴 AI Detected';
-      scoreLabel.className = 'text-sm text-red-600 mt-1';
-    }
-
-    document.getElementById('attemptsDisplay').textContent = data.attempts;
-    document.getElementById('bestDisplay').textContent = '#' + data.bestAttempt;
-    document.getElementById('bestLabel').textContent = `Source: ${data.source}`;
-
-  } catch (error) {
-    clearInterval(progressInterval);
-    alert('Error: ' + error.message);
-    outputBadge.textContent = '❌ Failed';
-    outputBadge.className = 'text-xs text-red-600';
-  } finally {
-    btn.disabled = false;
-    btn.textContent = '✨ Humanize Text';
-  }
-}
-</script>
-
+<script src="script.js"></script>
 </body>
 </html>
