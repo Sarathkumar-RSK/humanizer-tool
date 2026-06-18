@@ -18,9 +18,7 @@ body {
   padding: 0 24px;
 }
 
-/* ==========================================
-   HEADER
-   ========================================== */
+/* HEADER */
 header {
   border-bottom: 1px solid #f1f5f9;
   background: white;
@@ -92,9 +90,7 @@ header {
   border: 1px solid #e0e7ff;
 }
 
-/* ==========================================
-   HERO
-   ========================================== */
+/* HERO */
 .hero {
   text-align: center;
   padding: 60px 0 40px;
@@ -133,12 +129,10 @@ header {
   margin-bottom: 32px;
 }
 
-/* Hero Stats Row */
 .hero-stats {
   display: flex;
   align-items: center;
   justify-content: center;
-  gap: 0;
   background: #f9fafb;
   border: 1px solid #e5e7eb;
   border-radius: 16px;
@@ -176,9 +170,7 @@ header {
   background: #e5e7eb;
 }
 
-/* ==========================================
-   GRID
-   ========================================== */
+/* GRID */
 .grid {
   display: grid;
   grid-template-columns: 1fr 1fr;
@@ -190,9 +182,7 @@ header {
   .grid { grid-template-columns: 1fr; }
 }
 
-/* ==========================================
-   CARD
-   ========================================== */
+/* CARD */
 .card {
   background: white;
   border: 1px solid #e5e7eb;
@@ -271,9 +261,7 @@ textarea:focus {
   background: #eff6ff;
 }
 
-/* ==========================================
-   PROGRESS BAR
-   ========================================== */
+/* PROGRESS BAR */
 .progress-area {
   background: white;
   border: 1px solid #e5e7eb;
@@ -352,9 +340,7 @@ textarea:focus {
   border-color: #bbf7d0;
 }
 
-/* ==========================================
-   PRIMARY BUTTON
-   ========================================== */
+/* PRIMARY BUTTON */
 .action-area {
   text-align: center;
   margin: 24px 0;
@@ -393,7 +379,6 @@ textarea:focus {
   transform: none;
 }
 
-/* Button Spinner */
 .btn-spinner {
   width: 16px;
   height: 16px;
@@ -408,9 +393,7 @@ textarea:focus {
   to { transform: rotate(360deg); }
 }
 
-/* ==========================================
-   RESULTS
-   ========================================== */
+/* RESULTS */
 .results {
   display: grid;
   grid-template-columns: repeat(5, 1fr);
@@ -432,11 +415,6 @@ textarea:focus {
 
 .hidden {
   display: none !important;
-}
-
-@keyframes fadeIn {
-  from { opacity: 0; transform: translateY(10px); }
-  to { opacity: 1; transform: translateY(0); }
 }
 
 .stat-card {
@@ -470,18 +448,12 @@ textarea:focus {
   line-height: 1;
 }
 
-.stat-value.original {
-  font-size: 28px;
-}
-
 .stat-sub {
   font-size: 12px;
   color: #6b7280;
 }
 
-/* ==========================================
-   FEATURES
-   ========================================== */
+/* FEATURES */
 .features {
   display: grid;
   grid-template-columns: repeat(3, 1fr);
@@ -530,9 +502,7 @@ textarea:focus {
   line-height: 1.6;
 }
 
-/* ==========================================
-   TOAST ALERTS
-   ========================================== */
+/* TOAST ALERTS */
 .custom-alert {
   position: fixed;
   bottom: 24px;
@@ -571,9 +541,7 @@ textarea:focus {
   border: 1px solid #bfdbfe;
 }
 
-/* ==========================================
-   FOOTER
-   ========================================== */
+/* FOOTER */
 footer {
   border-top: 1px solid #f1f5f9;
   padding: 32px 24px;
@@ -618,52 +586,16 @@ footer {
   border: 1px solid #bbf7d0;
 }
 
-/* ==========================================
-   RESPONSIVE
-   ========================================== */
+/* RESPONSIVE */
 @media (max-width: 768px) {
-  .hero {
-    padding: 40px 0 30px;
-  }
-
-  .hero-stats {
-    padding: 16px 20px;
-  }
-
-  .hero-stat {
-    padding: 0 16px;
-  }
-
-  .hero-stat-value {
-    font-size: 22px;
-  }
-
-  .header-content {
-    padding: 12px 16px;
-  }
-
-  .gemini-badge {
-    display: none;
-  }
-
-  .footer-inner {
-    flex-direction: column;
-    text-align: center;
-  }
-
-  .footer-badges {
-    justify-content: center;
-  }
-
-  .primary-btn {
-    padding: 14px 32px;
-    font-size: 15px;
-  }
-
-  .custom-alert {
-    bottom: 16px;
-    right: 16px;
-    left: 16px;
-    max-width: none;
-  }
+  .hero { padding: 40px 0 30px; }
+  .hero-stats { padding: 16px 20px; }
+  .hero-stat { padding: 0 16px; }
+  .hero-stat-value { font-size: 22px; }
+  .header-content { padding: 12px 16px; }
+  .gemini-badge { display: none; }
+  .footer-inner { flex-direction: column; text-align: center; }
+  .footer-badges { justify-content: center; }
+  .primary-btn { padding: 14px 32px; font-size: 15px; }
+  .custom-alert { bottom: 16px; right: 16px; left: 16px; max-width: none; }
 }
