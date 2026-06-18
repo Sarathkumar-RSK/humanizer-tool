@@ -26,11 +26,11 @@
   <section class="hero">
     <div class="hero-tag">✦ Powered by Google Gemini AI</div>
     <h1>Transform AI Text into <span class="gradient-text">Human Writing</span></h1>
-    <p>Advanced humanization with built-in AI detection scoring — loops until your text reaches <strong>0–15% AI score</strong></p>
+    <p>Loops automatically until your text reaches <strong>0–15% AI score</strong></p>
     <div class="hero-stats">
       <div class="hero-stat">
         <span class="hero-stat-value">6x</span>
-        <span class="hero-stat-label">Retry Passes</span>
+        <span class="hero-stat-label">Max Passes</span>
       </div>
       <div class="hero-stat-divider"></div>
       <div class="hero-stat">
@@ -40,7 +40,7 @@
       <div class="hero-stat-divider"></div>
       <div class="hero-stat">
         <span class="hero-stat-value">3</span>
-        <span class="hero-stat-label">Humanization Levels</span>
+        <span class="hero-stat-label">Power Levels</span>
       </div>
     </div>
   </section>
@@ -49,7 +49,7 @@
     <div class="card">
       <div class="card-header">
         <h3>📝 Your AI Text</h3>
-        <span id="wordCount" class="counter">0 words</span>
+        <span id="wordCount" class="counter">0 words · 0/5000</span>
       </div>
       <textarea id="inputText" placeholder="Paste your AI-generated text here... (max 5000 characters)"></textarea>
       <div class="card-footer">
@@ -80,10 +80,10 @@
     <div class="progress-bar-wrap">
       <div id="progressBar" class="progress-bar"></div>
     </div>
-    <div id="progressSteps" class="progress-steps">
-      <span class="step active" id="step1">Standard</span>
-      <span class="step" id="step2">Aggressive</span>
-      <span class="step" id="step3">Nuclear</span>
+    <div class="progress-steps">
+      <span class="step active" id="step1">⚡ Standard</span>
+      <span class="step" id="step2">🔥 Aggressive</span>
+      <span class="step" id="step3">☢️ Nuclear</span>
     </div>
   </div>
 
@@ -91,13 +91,13 @@
     <button id="humanizeBtn" class="primary-btn" onclick="startHumanize()">
       ✨ Humanize Text
     </button>
-    <p class="action-note">Loops automatically until AI score reaches 0–15%</p>
+    <p class="action-note">Ctrl+Enter to start • Loops until AI score hits 0–15%</p>
   </div>
 
   <div id="resultsBox" class="results hidden">
     <div class="stat-card">
       <div class="stat-label">Original AI Score</div>
-      <div id="originalScore" class="stat-value original">--</div>
+      <div id="originalScore" class="stat-value">--</div>
       <div class="stat-sub">Before humanizing</div>
     </div>
     <div class="stat-card">
@@ -131,12 +131,12 @@
     <div class="feature">
       <div class="feature-icon">⚡</div>
       <h4>3 Power Levels</h4>
-      <p>Standard → Aggressive → Nuclear — escalates until the job is done</p>
+      <p>Standard → Aggressive → Nuclear — escalates until done</p>
     </div>
     <div class="feature">
       <div class="feature-icon">🎯</div>
       <h4>Real Detection</h4>
-      <p>ZeroGPT + pattern hybrid scoring after every pass</p>
+      <p>ZeroGPT + pattern hybrid scoring after every single pass</p>
     </div>
     <div class="feature">
       <div class="feature-icon">✦</div>
@@ -151,7 +151,7 @@
     <div class="feature">
       <div class="feature-icon">📊</div>
       <h4>Full Analytics</h4>
-      <p>See original score, final score, improvement and passes used</p>
+      <p>Original score, final score, improvement and passes used</p>
     </div>
   </section>
 </main>
@@ -163,7 +163,7 @@
       <span>Humanizer<span class="logo-accent">Pro</span></span>
     </div>
     <div class="footer-text">
-      © 2026 Humanizer Pro • Powered by Google Gemini 1.5 Flash + FastAPI
+      © 2025 Humanizer Pro • Powered by Google Gemini 1.5 Flash + FastAPI
     </div>
     <div class="footer-badges">
       <span class="footer-badge">ZeroGPT Safe</span>
